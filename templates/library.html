@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Kho học tập</title>
+  <style>
+    body{font:16px system-ui,sans-serif;margin:0;background:#f5f7fb;color:#172033}
+    header,main{max-width:1100px;margin:auto;padding:1rem}
+    header{display:flex;justify-content:space-between;align-items:center}
+    .toolbar{display:flex;gap:.7rem;flex-wrap:wrap;margin:1rem 0}
+    input,select,button{font:inherit;padding:.65rem;border:1px solid #cbd5e1;border-radius:7px}
+    button{cursor:pointer;background:white}button.active{background:#3157a4;color:white}
+    #cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+    article{background:white;padding:1rem;border-radius:12px;box-shadow:0 4px 16px #10204010}
+    article a{color:#3157a4}#pages{display:flex;gap:.5rem;margin:1.5rem 0}
+    #message{min-height:1.5rem;color:#a11}
+  </style>
+</head>
+<body>
+  <header>
+    <div><strong>Kho học tập</strong> — Xin chào {{ user.full_name }}</div>
+    <button id="logout-button" type="button">Đăng xuất</button>
+  </header>
+  <main>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Tìm tài liệu hoặc đề thi">
+      <select id="subject-filter"><option value="">Tất cả môn học</option></select>
+      <input id="difficulty-filter" type="number" min="1" max="10" step="0.5" placeholder="Difficulty 1-10">
+      <button class="tab active" data-kind="materials">Tài liệu</button>
+      <button class="tab" data-kind="assessments">Đề thi</button>
+    </div>
+    <p id="message" role="status"></p>
+    <section id="cards" aria-live="polite"></section>
+    <nav id="pages" aria-label="Phân trang"></nav>
+  </main>
+  <script src="{{ url_for('static', filename='js/library.js') }}" defer></script>
+</body>
+</html>
