@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Quản trị nội dung</title>
+  <style>
+    body{font:16px system-ui,sans-serif;margin:0;background:#f5f7fb;color:#172033}
+    header,main{max-width:1100px;margin:auto;padding:1rem}
+    header{display:flex;justify-content:space-between;align-items:center}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+    form,section{background:white;border-radius:12px;padding:1rem}
+    label{display:block;margin:.6rem 0 .25rem}
+    input,select,textarea,button{box-sizing:border-box;width:100%;padding:.6rem;font:inherit;border:1px solid #cbd5e1;border-radius:7px}
+    button{margin-top:.7rem;background:#3157a4;color:white;border:0;cursor:pointer}
+    .options label{display:flex;gap:.5rem;align-items:center}.options input[type=radio]{width:auto}
+    #message{min-height:1.5rem;color:#174}
+  </style>
+</head>
+<body>
+  <header>
+    <div><strong>Quản trị nội dung</strong> — {{ user.full_name }} ({{ user.role }})</div>
+    <button id="logout-button" type="button" style="width:auto">Đăng xuất</button>
+  </header>
+  <main>
+    <p id="message" role="status"></p>
+    <section>
+      <h2>Môn học hiện có</h2>
+      <ul id="subject-list"></ul>
+    </section>
+    <section>
+      <h2>Quản lý tài liệu</h2>
+      <div id="materials-list"></div>
+    </section>
+    <section>
+      <h2>Ngân hàng câu hỏi</h2>
+      <div id="questions-list"></div>
+    </section>
+    <section>
+      <h2>Quản lý đề thi</h2>
+      <div id="assessments-list"></div>
+    </section>
+    <div class="grid">
+      <form id="material-form">
+        <h2>Thêm tài liệu</h2>
+        <label for="material-subject">Môn học</label><select id="material-subject" name="subject_id" required></select>
+        <label for="material-title">Tiêu đề</label><input id="material-title" name="title" required maxlength="200">
+        <label for="material-description">Mô tả</label><textarea id="material-description" name="description"></textarea>
+        <label for="material-url">Đường dẫn file</label><input id="material-url" name="file_url" required maxlength="500">
+        <label for="material-difficulty">Độ khó</label>
+        <select id="material-difficulty" name="difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select>
+        <button type="submit">Lưu tài liệu</button>
+      </form>
+      <form id="question-form">
+        <h2>Thêm câu hỏi trắc nghiệm</h2>
+        <label for="question-subject">Môn học</label><select id="question-subject" name="subject_id" required></select>
+        <label for="question-content">Câu hỏi</label><textarea id="question-content" name="content" required></textarea>
+        <label for="question-topic">Chủ đề</label><input id="question-topic" name="topic">
+        <label for="question-difficulty">Độ khó</label>
+        <select id="question-difficulty" name="difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select>
+        <div class="options">
+          {% for letter in ["A", "B", "C", "D"] %}
+          <label>
+            <input type="radio" name="correct_option" value="{{ loop.index0 }}" {% if loop.first %}checked{% endif %}>
+            {{ letter }} <input name="option_{{ loop.index0 }}" required placeholder="Nội dung đáp án {{ letter }}">
+          </label>
+          {% endfor %}
+        </div>
+        <label for="question-explanation">Giải thích</label><textarea id="question-explanation" name="explanation"></textarea>
+        <button type="submit">Lưu câu hỏi</button>
+      </form>
+      <form id="assessment-form">
+        <h2>Tạo đề thi</h2>
+        <label for="assessment-subject">Môn học</label><select id="assessment-subject" name="subject_id" required></select>
+        <label for="assessment-title">Tên đề</label><input id="assessment-title" name="title" required>
+        <label for="assessment-type">Loại</label>
+        <select id="assessment-type" name="type"><option>quiz</option><option>exam</option><option>practice</option></select>
+        <label for="assessment-duration">Thời lượng (phút)</label><input id="assessment-duration" name="duration_minutes" type="number" min="1" value="30" required>
+        <label for="assessment-pass">Điểm đạt</label><input id="assessment-pass" name="pass_score" type="number" min="0" value="50" required>
+        <label for="assessment-questions">ID câu hỏi, phân cách bằng dấu phẩy</label><input id="assessment-questions" name="question_ids" placeholder="1, 2, 3">
+        <button type="submit">Tạo đề</button>
+      </form>
+    </div>
+  </main>
+  <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+</body>
+</html>
