@@ -11,7 +11,7 @@ from app.models.user import User
 
 auth_bp = Blueprint("auth", __name__)
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
-STUDY_TYPES = {"visual", "auditory", "reading", "kinesthetic"}
+STUDY_TYPES = {"visual", "reading", "kinesthetic"}
 
 
 @auth_bp.get("/login")
