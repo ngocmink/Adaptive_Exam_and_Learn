@@ -1,9 +1,10 @@
 # Adaptive Exam and Learn
 
-Flask + SQLAlchemy + PostgreSQL 16. Existing frontend assets are preserved.
+Flask, SQLAlchemy and PostgreSQL 16 with an integrated Sprint 1 interface.
 
-See [Dev A setup and handoff](docs/DEV_A_SETUP.md) for installation, migrations,
-demo seed, Excel import, read APIs, tests and teammate integration requirements.
+- [Local database/setup guide](docs/DEV_A_SETUP.md)
+- [Free shared cloud staging deployment](docs/CLOUD_STAGING.md)
 
-Dev B/C authentication, student library and admin write routes are still
-placeholders; this implementation does not claim those features are complete.
+This staging branch combines the database foundation with the current auth,
+library, admin and frontend code. Exam-taking/scoring/adaptive learning remain
+future work. Cloud hosting is not live until a Render account authorizes deployment.

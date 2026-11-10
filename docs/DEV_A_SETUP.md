@@ -1,3 +1,8 @@
+> On feature/cloud-staging, the existing main-branch UI/auth/library/admin
+> routes have now been integrated. Older placeholder notes below describe the
+> original foundation handoff. See CLOUD_STAGING.md for current integration,
+> test results and cloud deployment instructions.
+
 # Dev A — database and read API handoff
 
 ## What was found

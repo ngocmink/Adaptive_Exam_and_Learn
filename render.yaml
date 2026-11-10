@@ -1,0 +1,39 @@
+# Free shared staging only. No paid services or persistent disk.
+services:
+  - type: web
+    name: adaptive-exam-staging
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: feature/cloud-staging
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: adaptive-exam-staging-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: TRUST_PROXY
+        value: "true"
+      - key: SEED_DEMO
+        value: "true"
+      - key: DEMO_ADMIN_PASSWORD
+        generateValue: true
+      - key: DEMO_TEACHER_PASSWORD
+        generateValue: true
+      - key: DEMO_STUDENT_PASSWORD
+        generateValue: true
+databases:
+  - name: adaptive-exam-staging-db
+    plan: free
+    region: singapore
+    postgresMajorVersion: "16"
+    databaseName: exam_staging
+    user: exam_staging
+    ipAllowList: []

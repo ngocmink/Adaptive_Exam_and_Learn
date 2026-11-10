@@ -32,3 +32,10 @@ def paginate(statement, serialize, default_limit=9):
     return success_response([serialize(item) for item in result.items], pagination={
         'page': page, 'limit': limit, 'total_records': result.total, 'total_pages': result.pages,
     })
+
+def get_page_args():
+    return positive_int('page', 1), positive_int('limit', 9, 100)
+
+def pagination_data(result):
+    return {'page': result.page, 'limit': result.per_page,
+            'total_records': result.total, 'total_pages': result.pages}

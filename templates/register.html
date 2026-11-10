@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="vi" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Form đăng ký </title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Đăng ký | Adaptive Exam and Learn</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='asset/register.css') }}">
+  <style>
+    .content select { width: 100%; min-height: 45px; padding: 8px 12px; border: 1px solid #ccc; border-bottom-width: 2px; border-radius: 5px; font: inherit; }
+    #notice { min-height: 1.5em; color: #9b2350; }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -12,69 +17,52 @@
     <div class="title">Đăng ký</div>
     <div class="content">
       <!-- Registration form -->
-      <form action="/register" method="post">
+      <form id="register-form" action="/api/auth/register" method="post">
         <div class="user-details">
           <!-- Input for Full Name -->
           <div class="input-box">
             <span class="details">Họ tên</span>
-            <input type="text" name="rname" placeholder="Điền họ và tên" value="{{ rname }}" required>
-          </div>
-          <!-- Input for Username -->
-          <div class="input-box">
-            <span class="details">Tài khoản</span>
-            <input type="text" name="name" placeholder="Tên tài khoản" value="{{ name }}" required>
+            <input type="text" name="rname" placeholder="Điền họ và tên" autocomplete="name" maxlength="120" required>
           </div>
           <!-- Input for Email -->
           <div class="input-box">
             <span class="details">Email</span>
-            <input type="text" name="email" placeholder="Email" value="{{ email }}" required>
+            <input type="email" name="email" placeholder="Email" autocomplete="email" required>
           </div>
           <!-- Input for Phone Number -->
           <div class="input-box">
             <span class="details">Số điện thoại</span>
-            <input type="text" name="phone" placeholder="Nhập số điện thoại" value="{{ phone }}" required>
+            <input type="tel" name="phone" placeholder="Nhập số điện thoại" autocomplete="tel">
           </div>
           <!-- Input for Password -->
           <div class="input-box">
             <span class="details">Mật khẩu</span>
-            <input type="password" name="password" placeholder="Nhập mật khẩu" required>
+            <input type="password" name="password" placeholder="Nhập mật khẩu" autocomplete="new-password" minlength="6" required>
           </div>
           <!-- Input for Confirm Password -->
           <div class="input-box">
             <span class="details">Xác nhận mật khẩu</span>
-            <input type="password" name="confirm_password" placeholder="Nhập lại mật khẩu" required>
+            <input type="password" name="confirm_password" placeholder="Nhập lại mật khẩu" autocomplete="new-password" minlength="6" required>
           </div>
         </div>
         <div class="gender-details">
-          <!-- Radio buttons for gender selection -->
-          <input type="radio" name="gender" id="dot-1" required>
-          <input type="radio" name="gender" id="dot-2">
-          <input type="radio" name="gender" id="dot-3">
-          <span class="gender-title">Giới tính</span>
+          <span class="gender-title">Phong cách học tập (không bắt buộc)</span>
+          <input type="radio" name="study_type" id="dot-1" value="visual">
+          <input type="radio" name="study_type" id="dot-2" value="reading">
+          <input type="radio" name="study_type" id="dot-3" value="kinesthetic">
           <div class="category">
-            <!-- Label for Male -->
             <label for="dot-1">
               <span class="dot one"></span>
-              <span class="gender">Nam</span>
+              <span class="gender">Nghe và nhìn</span>
             </label>
-            <!-- Label for Female -->
             <label for="dot-2">
               <span class="dot two"></span>
-              <span class="gender">Nữ</span>
+              <span class="gender">Đọc và ghi</span>
             </label>
-            <!-- Label for Prefer not to say -->
             <label for="dot-3">
               <span class="dot three"></span>
-              <span class="gender">Khác</span>
+              <span class="gender">Thực hành</span>
             </label>
-          </div>
-          <div>
-            <label for="studytype">Phương pháp học yêu thích:</label>
-            <select name="studytype" id="studytype" required>
-                <option value="" disabled selected>Chọn phương pháp học bạn thích</option>
-                <option value="Formula">Tôi thích kiểu học bằng những công thức toán hơn</option>
-                <option value="Visual">Tôi thích kiểu học minh họa bằng hình ảnh hơn</option>
-            </select> 
           </div>
         </div>
         <!-- Submit button -->
@@ -82,6 +70,7 @@
           <input type="submit" value="Đăng ký">
         </div>
       </form>
+      <p id="notice" role="status" aria-live="polite"></p>
       {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul>
@@ -91,7 +80,9 @@
             </ul>
         {% endif %}
       {% endwith %}
+      <p>Đã có tài khoản? <a href="/login">Đăng nhập</a></p>
     </div>
   </div>
+  <script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
 </body>
 </html>
