@@ -53,7 +53,8 @@ class Material(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, server_default=db.func.now())
     subject = db.relationship('Subject')
     author = db.relationship('User')
-    __table_args__ = (CheckConstraint('difficulty BETWEEN 1 AND 10', name='difficulty'),)
+    __table_args__ = (CheckConstraint('difficulty BETWEEN 1 AND 10', name='difficulty'),
+        UniqueConstraint('id','subject_id',name='uq_materials_id_subject'),)
 
     @validates('difficulty')
     def validate_difficulty(self, key, value):
@@ -73,6 +74,7 @@ class Question(db.Model):
     __table_args__ = (
         CheckConstraint('difficulty BETWEEN 1 AND 10', name='difficulty'),
         Index('ix_questions_subject_difficulty_topic', 'subject_id', 'difficulty', 'topic'),
+        UniqueConstraint('id','subject_id',name='uq_questions_id_subject'),
     )
     def validate_for_use(self):
         if len(self.options) != 4 or sum(bool(option.is_correct) for option in self.options) != 1:
