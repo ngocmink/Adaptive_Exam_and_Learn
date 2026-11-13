@@ -6,7 +6,7 @@ from flask_migrate import upgrade
 from app import create_app
 from config import ROOT
 from dotenv import load_dotenv
-load_dotenv(ROOT / ".env")
+load_dotenv(ROOT / ".env", override=True)
 from app.extensions import db
 from app.models import User
 from app.seed.import_excel import seed_demo
