@@ -15,7 +15,7 @@ library_bp = Blueprint("library", __name__)
 @library_bp.get("/account")
 @login_required
 def learner_page():
-    return render_template("library.html", user=g.current_user)
+    return render_template("account.html", user=g.current_user)
 
 
 @library_bp.get("/reading")

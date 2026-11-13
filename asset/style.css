@@ -513,3 +513,357 @@ summary {
 }
 
 
+
+/* Learner dashboard content, scoped to avoid changing the public landing page. */
+.learner-account {
+  margin: 0;
+  min-height: 100vh;
+  color: #24233a;
+  line-height: 1.5;
+}
+
+.learner-account .account-header {
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.learner-account .weblogo img {
+  display: block;
+  width: 138px;
+  max-width: 100%;
+  height: auto;
+}
+
+.learner-account .nav {
+  margin: 0 auto;
+}
+
+.learner-account .nav ul {
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.learner-account .nav a {
+  display: inline-block;
+  padding: 8px 10px;
+}
+
+.learner-account .logo-container {
+  align-items: center;
+}
+
+.learner-account .logo-container .samsung-logo,
+.learner-account .logo-container .university-logo {
+  width: auto;
+  max-width: 52px;
+  max-height: 42px;
+  object-fit: contain;
+}
+
+.learner-account .account-user {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.learner-account .welcome-message {
+  margin: 0;
+}
+
+.account-logout,
+.learner-tab {
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 1px solid #d8d8e8;
+  border-radius: 999px;
+  background: #fff;
+  color: #38366c;
+  font: 600 15px "Work Sans", sans-serif;
+  cursor: pointer;
+}
+
+.account-logout:hover,
+.learner-tab:hover,
+.learner-tab.active {
+  border-color: #4d4ca2;
+  background: #4d4ca2;
+  color: #fff;
+}
+
+.account-logout:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.learner-library {
+  width: min(1120px, calc(100% - 48px));
+  margin: 20px auto 70px;
+  padding: clamp(20px, 4vw, 48px);
+  border-radius: 24px;
+  background: #f5f5f7;
+  box-shadow: 0 16px 50px #26264a12;
+}
+
+.learner-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.learner-subject-label {
+  color: #38366c;
+  font: 600 16px "Work Sans", sans-serif;
+}
+
+#subject-filter {
+  min-width: min(280px, 100%);
+  min-height: 44px;
+  padding: 8px 36px 8px 14px;
+  border: 1px solid #d5d4e6;
+  border-radius: 10px;
+  background: #fff;
+  color: #24233a;
+  font: 16px "Work Sans", sans-serif;
+}
+
+#subject-filter:disabled {
+  opacity: .6;
+}
+
+.learner-tabs {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.learner-subject-message,
+.learner-message {
+  min-height: 24px;
+  margin: 10px 0;
+  color: #55536f;
+  font: 15px/1.5 "Work Sans", sans-serif;
+}
+
+.learner-subject-message:not(:empty) {
+  color: #9a4c1e;
+}
+
+.learner-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.learner-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid #e8e7f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 22px #24233a0b;
+}
+
+.learner-card-title {
+  margin: 0;
+  color: #38366c;
+  font: 700 21px/1.35 "Roboto Slab", serif;
+  overflow-wrap: anywhere;
+}
+
+.learner-card-meta,
+.learner-card-description {
+  width: 100%;
+  color: #55536f;
+  font: 15px/1.55 "Work Sans", sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.learner-card-description {
+  flex: 1;
+}
+
+.learner-card-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #e6e5ff;
+  color: #38366c;
+  font: 600 15px "Work Sans", sans-serif;
+}
+
+.learner-card-link:hover {
+  background: #d4d5ff;
+}
+
+.learner-account .about img,
+.learner-account .plan img,
+.learner-account .spaceline img,
+.learner-account .why img {
+  max-width: 100%;
+}
+
+@media (max-width: 960px) {
+  .learner-account .account-header {
+    justify-content: center;
+  }
+
+  .learner-account .nav {
+    order: 3;
+    width: 100%;
+  }
+
+  .learner-account .nav ul {
+    justify-content: center;
+  }
+
+  .learner-account .account-user {
+    margin-left: auto;
+  }
+
+  .learner-account .course-selection h1 {
+    font-size: clamp(32px, 6vw, 50px);
+    line-height: 1.2;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .learner-account .main-content {
+    max-width: calc(100% - 32px);
+  }
+
+  .learner-account .account-header {
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .learner-account .account-user {
+    width: 100%;
+    justify-content: space-between;
+    margin: 0;
+  }
+
+  .learner-account .nav ul {
+    justify-content: flex-start;
+  }
+
+  .learner-account .faqs .heading {
+    width: 100%;
+  }
+
+  .learner-account .faqs .line1 {
+    width: auto;
+    min-width: 24px;
+    flex: 1 1 auto;
+  }
+
+  .learner-account .nav a {
+    padding: 7px;
+    font-size: 13px;
+  }
+
+  .learner-account .hero {
+    padding: 72px 0 110px;
+  }
+
+  .learner-account .hero h1,
+  .learner-account .hero h2 {
+    font-size: clamp(32px, 9vw, 44px);
+  }
+
+  .learner-account .hero p {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .learner-account .random-img {
+    margin-top: -85px;
+    padding-bottom: 50px;
+  }
+
+  .learner-library {
+    width: calc(100% - 32px);
+    padding: 20px 16px;
+  }
+
+  .learner-toolbar {
+    align-items: stretch;
+  }
+
+  .learner-subject-label {
+    width: 100%;
+  }
+
+  #subject-filter {
+    width: 100%;
+  }
+
+  .learner-tabs {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .learner-tab {
+    flex: 1;
+    padding-inline: 10px;
+  }
+
+  .learner-account .why {
+    padding: 70px 20px;
+  }
+
+  .learner-account .why p,
+  .learner-account .plan p {
+    font-size: clamp(32px, 8vw, 46px);
+    padding-bottom: 35px;
+  }
+
+  .learner-account .spaceline .img {
+    padding-top: 70px;
+  }
+
+  .learner-account .footer {
+    padding: 50px 20px;
+  }
+
+  .learner-account .footer .main-content {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .learner-account .footer .footq,
+  .learner-account .footer .randomsth {
+    width: 100%;
+  }
+
+  .learner-account .footheading,
+  .learner-account .footer .subheading {
+    margin-left: 0;
+  }
+
+  .learner-account .footheading,
+  .learner-account .randomsth p {
+    font-size: 40px;
+    line-height: 1.2;
+  }
+
+  .learner-account .randomsth p {
+    margin-left: 0;
+  }
+
+  .learner-account .footer .img {
+    width: min(100%, 420px);
+  }
+}

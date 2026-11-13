@@ -1,250 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="vi">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='asset/reset.css') }}" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Roboto+Slab:wght@100..900&family=Space+Grotesk:wght@300..700&family=Taviraj:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='asset/style.css') }}" />
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$']]
-            },
-            svg: { fontCache: 'global' }
-        };
-    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Không gian học tập | VISE</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='asset/reset.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=ADLaM+Display&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Roboto+Slab:wght@100..900&family=Space+Grotesk:wght@300..700&family=Taviraj:ital,wght@0,100..900;1,100..900&family=Work+Sans:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='asset/style.css') }}">
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] }, svg: { fontCache: 'global' } };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
+<body class="learner-account">
+  <header class="header fixed">
+    <div class="main-content">
+      <div class="body account-header">
+        <a class="weblogo" href="{{ url_for('home_page') }}" aria-label="VISE - Trang chủ">
+          <img src="{{ url_for('static', filename='images/Untitled (1440 x 1024 px) 1.svg') }}" alt="VISE" class="img">
+        </a>
+        <nav class="nav" aria-label="Điều hướng chính">
+          <ul>
+            <li><a href="#about">Về chúng tôi</a></li>
+            <li><a href="#courses">Khóa học</a></li>
+            <li><a href="#method">Phương pháp</a></li>
+            <li><a href="#roadmap">Lộ trình</a></li>
+            <li><a href="#courses">Tài liệu</a></li>
+          </ul>
+        </nav>
+        <div class="logo-container" aria-label="Đơn vị đồng hành">
+          <img src="{{ url_for('static', filename='images/samsung logo.svg') }}" alt="Samsung" class="img samsung-logo">
+          <img src="{{ url_for('static', filename='images/Logo ĐH Bách Khoa Hà Nội-HUST (1).svg') }}" alt="Đại học Bách khoa Hà Nội" class="img university-logo">
+        </div>
+        <div class="account-user">
+          <span class="welcome-message">Xin chào, {{ user.full_name }}</span>
+          <button id="logout-button" class="account-logout" type="button">Đăng xuất</button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-<body>
-    <header class="header fixed">
-        <div class="main-content">
-            <div class="body">
-                <div class="weblogo">
-                    <img src="{{ url_for('static', filename='images/Untitled (1440 x 1024 px) 1.svg') }}" alt="" class="img">
-                </div>
-                <div class="welcome-message">
-                    Chào mừng, {{ user_email }}
-                </div>
-                <nav class="nav">
-                    <ul>
-                        <li>
-                            <a href="#!">Về chúng tôi</a>
-                        </li>
-                        <li>
-                            <a href="#!">Khóa học</a>
-                        </li>
-                        <li>
-                            <a href="#!">Phương pháp</a>
-                        </li>
-                        <li>
-                            <a href="#!">Lộ trình</a>
-                        </li>
-                        <li>
-                            <a href="#.!">Tài liệu</a>
-                        </li>
-                    </ul>
-                </nav>
-                <div class="logo-container">
-                    <img src="{{ url_for('static', filename='images/samsung logo.svg') }}" alt="Samsung Logo" class="img samsung-logo">
-                    <img src="{{ url_for('static', filename='images/Logo ĐH Bách Khoa Hà Nội-HUST (1).svg') }}" alt="University Logo" class="img university-logo">
-                </div>                
-            </div>
-        </div>
-    </header>
-    <div class="main">
-        <div class="hero">
-            <div class="main-content">
-                <h1 class="heading1">Lộ trình học tối ưu</h1>
-                <h2 class="heading2">Trí Tuệ Nhân Tạo Cá Nhân Hóa Học Tập.</h2>
-                <p class="desc">
-                    Công nghệ của chúng tôi hỗ trợ đánh giá nhanh chóng và chính xác, đảm bảo an toàn dữ liệu dựa trên nền tảng AI. Với thuật toán phân tích hiện đại, VISE mở ra trải nghiệm học tập không giới hạn và phù hợp cho từng cá nhân.
-                </p>
-            </div>
-            <!-- <div class="startbtn"> -->
-                <!-- <a href="#!" class="btn">Đăng ký</a> -->
-                <!-- <a href="#!" class="btn">Đăng nhập</a> -->
-            <!-- </div> -->
-        </div>
-        <div class="random-img">
-            <img src="{{ url_for('static', filename='images/pic.jpg') }}" alt="" class="img1">
-        </div>
-        <div class="course-selection">
-            <h1 class="title">Khóa học</h1>
-            <div class="course">
-                <div class="calculus">
-                    <div class="subject">Giới hạn hàm số</div>
-                    <img src="{{ url_for('static', filename='images/Line 1.svg') }}" alt="" class="img">
-                    <form action="/account" method="post">
-                        {% for tailieu in tai_lieus.values() %}
-                            <div class="sub">
-                                <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                                <p>{{ tailieu.Subject | safe }}</p>
-                                <button class="btn" type="submit" name="{{ 'tailieu_' + loop.index0|string }}" value="{{'activated_' + loop.index0|string}}">START</button>
-                            </div>
-                        {% endfor %}
-                    </form>
-                    <!-- <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                        <p>Giới hạn dãy số</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                        <p>Giới hạn lượng giác</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div> -->
-                    <div class="subject">Đạo hàm và vi phân</div>
-                    <img src="{{ url_for('static', filename='images/Line 1.svg') }}" alt="" class="img">
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                        <p>Đạo hàm</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                        <p>Đạo hàm và vi phân cấp cao</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                        <p>Ứng dụng vi phân</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="subject">Giới hạn hàm số</div>
-                    <img src="{{ url_for('static', filename='images/Line 1.svg') }}" alt="" class="img">
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 64.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                </div>
-                <div class="algebra">
-                    <div class="subject">Ma trận</div>
-                    <img src="{{ url_for('static', filename='images/Line 1.svg') }}" alt="" class="img">
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Định thức</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Hệ phương trình tuyến tính</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Hạng của ma trận</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="subject">Tập hợp</div>
-                    <img src="{{ url_for('static', filename='images/Line 1.svg') }}" alt="" class="img">
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="subject">Tập hợp</div>
-                    <img src="{{ url_for('static', filename='images/Line 1.svg') }}" alt="" class="img">
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                    <div class="sub">
-                        <img src="{{ url_for('static', filename='images/Ellipse 81.svg') }}" alt="" class="img">
-                        <p>Giới hạn cơ bản</p>
-                        <a href="#!" class="btn">Start!</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="about">
-            <img src="{{ url_for('static', filename='images/Group 13.png') }}" alt="" class="img">
-        </div>
-        <div class="plan">
-            <p>Lộ trình học tập tối ưu</p>
-            <img src="{{ url_for('static', filename='images/Lộ trình học tối ưu.svg') }}" alt="" class="img">
-        </div>
-        <div class="spaceline">
-            <img src="{{ url_for('static', filename='images/Frame 9 1.svg') }}" alt="" class="img">
-        </div>
-        <div class="why">
-            <p>Tại sao chọn chúng tôi?</p>
-            <img src="{{ url_for('static', filename='images/Tại sao chọn chúng tôi.svg') }}" alt="" class="img">
-        </div>
-        <div class="faqs">
-            <div class="main-content">
-                <div class="heading">
-                    <h2 class="title">FAQs</h2>
-                    <!-- <div class="randomline"> -->
-                    <div class="border1"></div>
-                    <div class="line1"></div>
-                    <div class="border2"></div>
-                    <!-- </div> -->
-                    <p class="subtitle">Bạn hỏi - Chúng tôi trả lời !</p>
-                </div>
-                <div class="question faqs">
-                    <details class="qbox">
-                        <summary class="q1">Các bạn cung cấp các loại khóa học nào?</summary>
-                        <p class="answer">Chúng tôi cung cấp nhiều khóa học toán đại cương cao cấp như Giải tích, Đại số tuyến tính, và Xác suất Thống kê. Các khóa học được thiết kế thân thiện và dễ tiếp cận, từ kiến thức cơ bản đến nâng cao, giúp bạn hiểu sâu lý thuyết và ứng dụng thực tế. Dù bạn là sinh viên hay người đi làm muốn củng cố nền tảng toán học, chúng tôi luôn có lộ trình học phù hợp, cùng các bài giảng và bài tập thực hành sinh động.</p>
-                    </details>
-                    <details class="qbox">
-                        <summary class="q2">Lợi ích của các khóa học thiết kế riêng là gì?</summary>
-                        <p class="answer">Các khóa học thiết kế riêng mang lại nhiều lợi ích, như được xây dựng theo nhu cầu và mục tiêu cụ thể của bạn. Bạn có thể tập trung vào những phần kiến thức cần cải thiện, học theo tốc độ phù hợp, và áp dụng thực tế ngay trong lĩnh vực của mình. Điều này đảm bảo hiệu quả học tập cao hơn và giúp bạn đạt kết quả nhanh chóng, từ đó nâng cao kỹ năng một cách toàn diện.</p>
-                    </details>
-                    <details class="qbox">
-                        <summary class="q3">Tất cả các khóa học đều được thiết kế riêng cho người dùng phải không</summary>
-                        <p class="answer">Không phải tất cả khóa học đều được thiết kế riêng, nhưng chúng tôi luôn sẵn sàng tạo ra các khóa học phù hợp với nhu cầu cá nhân của bạn. Bên cạnh các khóa học cơ bản, bạn có thể lựa chọn chương trình học tùy chỉnh để tập trung vào những phần kiến thức mà bạn muốn phát triển sâu hơn.</p>
-                    </details>
-                </div>
-                <div class="footerline1"></div>              
-            </div>
-        </div>
+  <main class="main">
+    <section class="hero">
+      <div class="main-content">
+        <h1 class="heading1">Lộ trình học tối ưu</h1>
+        <h2 class="heading2">Trí tuệ nhân tạo cá nhân hóa học tập.</h2>
+        <p class="desc">Công nghệ của chúng tôi hỗ trợ đánh giá nhanh chóng và chính xác, giúp bạn học tập theo lộ trình phù hợp với mục tiêu của mình.</p>
+      </div>
+    </section>
+    <div class="random-img" aria-hidden="true">
+      <img src="{{ url_for('static', filename='images/pic.jpg') }}" alt="" class="img1">
     </div>
-    <div class="footer">
-        <div class="main-content">
-            <div class="footq">
-                <h1 class="footheading">Câu hỏi ?</h1>
-                <p class="subheading">Bạn có thích việc chúng tôi đang làm và muốn giúp chúng tôi cải tiến việc giảng dạy và cách mọi người học toán không ?</p>
-            </div>
-            <div class="randomsth">
-                <img src="{{ url_for('static', filename='images/footerfig.svg') }}" alt="" class="img">
-                <p>Get in touch</p>
-            </div>
+
+    <section class="course-selection" id="courses" aria-labelledby="course-title">
+      <h1 class="title" id="course-title">Kho học tập của bạn</h1>
+      <div class="learner-library">
+        <div class="learner-toolbar">
+          <label class="learner-subject-label" for="subject-filter">Môn học</label>
+          <select id="subject-filter" aria-label="Lọc theo môn học">
+            <option value="">Tất cả môn học</option>
+          </select>
+          <div class="learner-tabs" role="tablist" aria-label="Loại nội dung">
+            <button class="learner-tab active" id="materials-tab" type="button" role="tab" aria-selected="true" data-kind="materials">Tài liệu</button>
+            <button class="learner-tab" id="assessments-tab" type="button" role="tab" aria-selected="false" data-kind="assessments">Đề ôn tập</button>
+          </div>
         </div>
+        <p id="subject-message" class="learner-subject-message" role="status" aria-live="polite"></p>
+        <p id="account-message" class="learner-message" role="status" aria-live="polite">Đang tải nội dung học tập…</p>
+        <div id="account-cards" class="learner-cards" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="about" id="about" aria-label="Về VISE">
+      <img src="{{ url_for('static', filename='images/Group 13.png') }}" alt="Giới thiệu về VISE" class="img">
+    </section>
+    <section class="plan" id="roadmap">
+      <p>Lộ trình học tập tối ưu</p>
+      <img src="{{ url_for('static', filename='images/Lộ trình học tối ưu.svg') }}" alt="Minh họa lộ trình học tập" class="img">
+    </section>
+    <div class="spaceline" id="method">
+      <img src="{{ url_for('static', filename='images/Frame 9 1.svg') }}" alt="" class="img">
     </div>
+    <section class="why">
+      <p>Tại sao chọn chúng tôi?</p>
+      <img src="{{ url_for('static', filename='images/Tại sao chọn chúng tôi.svg') }}" alt="Ưu điểm của VISE" class="img">
+    </section>
+    <section class="faqs">
+      <div class="main-content">
+        <div class="heading">
+          <h2 class="title">FAQs</h2>
+          <div class="border1"></div><div class="line1"></div><div class="border2"></div>
+          <p class="subtitle">Bạn hỏi - Chúng tôi trả lời!</p>
+        </div>
+        <div class="question faqs">
+          <details class="qbox">
+            <summary class="q1">Các bạn cung cấp những khóa học nào?</summary>
+            <p class="answer">Chúng tôi cung cấp tài liệu và bài ôn tập cho các môn học. Hãy chọn môn học trong kho để xem nội dung hiện có.</p>
+          </details>
+          <details class="qbox">
+            <summary class="q2">Tôi có thể chọn nội dung theo môn học không?</summary>
+            <p class="answer">Có. Dùng bộ lọc môn học trong kho học tập để xem tài liệu và đề ôn tập phù hợp.</p>
+          </details>
+          <details class="qbox">
+            <summary class="q3">Tôi có thể học theo tốc độ riêng không?</summary>
+            <p class="answer">Bạn có thể xem lại tài liệu theo nhu cầu và chọn nội dung phù hợp với kế hoạch học tập của mình.</p>
+          </details>
+        </div>
+        <div class="footerline1"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="main-content">
+      <div class="footq">
+        <h2 class="footheading">Câu hỏi?</h2>
+        <p class="subheading">Bạn có góp ý giúp chúng tôi cải thiện việc giảng dạy và cách mọi người học toán không?</p>
+      </div>
+      <div class="randomsth">
+        <img src="{{ url_for('static', filename='images/footerfig.svg') }}" alt="" class="img">
+        <p>Get in touch</p>
+      </div>
+    </div>
+  </footer>
+  <script>
+    window.accountDashboardConfig = {
+      subjectsUrl: {{ url_for('subjects_read.subjects')|tojson }},
+      materialsUrl: {{ url_for('library.list_materials')|tojson }},
+      assessmentsUrl: {{ url_for('library.list_assessments')|tojson }},
+      readingUrl: {{ url_for('library.reading_page')|tojson }},
+      logoutUrl: {{ url_for('auth.logout')|tojson }},
+      loginUrl: {{ url_for('auth.login_page')|tojson }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='js/account.js') }}" defer></script>
 </body>
-
 </html>
