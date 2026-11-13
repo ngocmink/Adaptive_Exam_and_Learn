@@ -15,3 +15,7 @@ docs
 tests
 output
 outputs
+
+.local-backups
+*.dump
+*.backup
