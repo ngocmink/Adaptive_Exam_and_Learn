@@ -52,7 +52,6 @@ def _material_data(material):
         "description": material.description,
         "file_url": material.file_url,
         "difficulty": float(material.difficulty),
-        "author_id": material.author_id,
         "is_active": material.is_active,
     }
 

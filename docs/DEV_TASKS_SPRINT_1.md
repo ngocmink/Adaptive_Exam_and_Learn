@@ -62,7 +62,7 @@ Thiết kế Schema CSDL chuẩn PostgreSQL với đầy đủ 10 thực thể, 
 - [ ] **Bước 2: Hoàn thiện 10 Models trong `app/models/`**:
   - `User`: `id`, `email` (unique, lowercase), `password_hash`, `full_name`, `phone`, `role` (`student`/`teacher`/`admin`), `study_type`, `created_at`.
   - `Subject`: `id`, `code` (unique), `name`, `description`, `is_active`.
-  - `Material`: `id`, `subject_id` (FK), `title`, `description`, `file_url`, `difficulty` (`easy`/`medium`/`hard`), `author_id` (FK), `is_active`.
+  - `Material`: `id`, `subject_id` (FK), `title`, `description`, `file_url`, `difficulty` (`easy`/`medium`/`hard`), `is_active`.
   - `Question`: `id`, `subject_id` (FK), `topic`, `content`, `difficulty`, `explanation`, `is_active`.
   - `QuestionOption`: `id`, `question_id` (FK), `content`, `is_correct` (boolean).
   - `Assessment`: `id`, `subject_id` (FK), `title`, `description`, `type` (`quiz`/`exam`/`practice`), `duration_minutes`, `pass_score`, `created_by` (FK), `is_active`.

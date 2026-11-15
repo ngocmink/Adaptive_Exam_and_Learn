@@ -60,12 +60,11 @@ def question_detail(question_id):
 @admin_read_bp.get('/materials')
 @staff_required
 def materials():
-    statement = filters(select(Material).options(selectinload(Material.subject), selectinload(Material.author)), Material)
+    statement = filters(select(Material).options(selectinload(Material.subject)), Material)
     return paginate(statement.order_by(Material.id.desc()), lambda m: {
         'id': m.id, 'subject_id': m.subject_id, 'subject_name': m.subject.name,
         'title': m.title, 'description': m.description, 'file_url': m.file_url,
-        'difficulty': float(m.difficulty), 'author_id': m.author_id,
-        'author_name': m.author.full_name if m.author else None, 'is_active': m.is_active,
+        'difficulty': float(m.difficulty), 'is_active': m.is_active,
         'created_at': m.created_at.isoformat(),
     })
 

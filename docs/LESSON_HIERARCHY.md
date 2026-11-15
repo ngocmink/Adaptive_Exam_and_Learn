@@ -1,27 +1,28 @@
-# Subject / chapter / lesson database hierarchy
+# Lessons directly under subjects
 
-Migration 20261114_01 adds four tables without assigning or deleting existing
-content: chapters, lessons, lesson_materials and question_lessons.
+The content hierarchy is Subject → Lesson → Materials and Questions.
+Each lesson represents the chapter-sized teaching unit chosen by the team.
+There is no separate Chapter model. Materials have no uploader/author account
+relationship. Assessment.created_by is unchanged. Source authorship and permission
+information should still be collected separately; uploader identity is not the
+original PDF author's identity.
 
-- Subject -> ordered chapters -> ordered lessons.
-- Chapter codes are unique within a subject; lesson codes within a chapter.
-- Status is draft/published/archived. Rows start as draft.
-- One material or question can support multiple lessons in the SAME subject.
-- Composite foreign keys enforce subject consistency, including subsequent
-  changes to a parent subject. Existing materials/questions receive additional
-  (id, subject_id) unique keys; their original IDs and API fields are unchanged.
-- Material/question link pairs cannot repeat. Display order must be positive;
-  equal order values are allowed during reordering; sort by order_num then id.
-- Deletion is restricted while content is referenced. Archive content instead.
+## Relationships
 
-Example after flushing the subject/material/question rows:
+- Lesson.subject_id references subjects.id.
+- Lesson codes are unique within a subject.
+- Lessons are ordered by order_num, then id; duplicate order values are allowed.
+- Materials and questions can support multiple lessons in the same subject.
+- Composite foreign keys prevent cross-subject content links.
+- Material responses no longer contain author_id or author_name. Shared staff
+  management permissions remain unchanged.
 
 ```python
-chapter = Chapter(subject_id=subject.id, code='CALC', title='Calculus')
-db.session.add(chapter)
-db.session.flush()
-lesson = Lesson(chapter_id=chapter.id, subject_id=subject.id,
-                code='DERIVATIVES', title='Derivatives', order_num=1)
+from app.extensions import db
+from app.models import Lesson, LessonMaterial, QuestionLesson
+
+lesson = Lesson(subject_id=subject.id, code='LIMITS',
+                title='Giới hạn', order_num=1)
 db.session.add(lesson)
 db.session.flush()
 db.session.add(LessonMaterial.link(lesson, material))
@@ -29,15 +30,23 @@ db.session.add(QuestionLesson.link(question, lesson))
 db.session.commit()
 ```
 
-Use reviewed subject/chapter/lesson codes to organize actual content. The old
-free-text Question.topic remains for compatibility; no automatic mapping is
-attempted. Do not create invented chapters/lessons in the shared database.
-Updating content imports to accept these codes and implementing hierarchy
-management/list screens are subsequent work, not supplied by schema migration.
-Existing tests/assessments remain subject-level; no lesson-test linkage is
-assumed. Published question versioning and attempt deadlines remain separate
-future migrations.
+## Upgrade to 20261115_01
 
-Apply with `flask --app app:create_app db upgrade` only after verifying the
-destination. Back up shared data first. The downgrade deletes NEW hierarchy
-content, so it is only suitable for disposable test DBs or planned restores.
+Back up the target database before running `flask db upgrade`.
+Deploy the matching code together with the migration; the old code expects
+chapters and material author columns and is incompatible with the new schema.
+Do not run the migration against a database still serving requests from old code.
+
+The migration preserves lesson IDs, material IDs and all content links. Lesson
+order is flattened by old chapter order/id, then old lesson order/id. If lesson
+codes collide within a subject, the lowest lesson ID keeps its code; subsequent
+duplicates receive a deterministic ~ID suffix (with a counter if necessary),
+within the 100-character limit. Compare lesson codes before/after and update
+external collection workbooks accordingly.
+
+The migration removes chapter rows, chapter metadata and material author IDs.
+These removed attributes are recoverable only from the backup. Automatic
+downgrade intentionally refuses to invent the deleted information.
+
+This change does not implement the separate grading, timing, snapshot, account
+deactivation or adaptive-learning proposals. It adds no lesson UI or endpoints.

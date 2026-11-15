@@ -3,30 +3,10 @@ from sqlalchemy import CheckConstraint, UniqueConstraint, ForeignKeyConstraint, 
 from app.extensions import db
 from app.models.schema import utcnow
 
-class Chapter(db.Model):
-    __tablename__ = 'chapters'
-    id = db.Column(db.Integer, primary_key=True)
-    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id', ondelete='RESTRICT'), nullable=False, index=True)
-    code = db.Column(db.String(100), nullable=False)
-    title = db.Column(db.String(300), nullable=False)
-    description = db.Column(db.Text)
-    order_num = db.Column(db.Integer, nullable=False, default=1, server_default='1')
-    status = db.Column(db.String(20), nullable=False, default='draft', server_default='draft')
-    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, server_default=db.func.now())
-    subject = db.relationship('Subject', backref=db.backref('chapters', passive_deletes=True, order_by='Chapter.order_num, Chapter.id'))
-    __table_args__ = (
-        UniqueConstraint('subject_id','code',name='uq_chapters_subject_code'),
-        UniqueConstraint('id','subject_id',name='uq_chapters_id_subject'),
-        CheckConstraint('order_num > 0',name='order'),
-        CheckConstraint("length(trim(code)) > 0 AND length(trim(title)) > 0",name='nonempty'),
-        CheckConstraint("status IN ('draft','published','archived')",name='status'),
-    )
-
 class Lesson(db.Model):
     __tablename__ = 'lessons'
     id = db.Column(db.Integer, primary_key=True)
-    chapter_id = db.Column(db.Integer, nullable=False, index=True)
-    subject_id = db.Column(db.Integer, nullable=False, index=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id', ondelete='RESTRICT'), nullable=False, index=True)
     code = db.Column(db.String(100), nullable=False)
     title = db.Column(db.String(300), nullable=False)
     objectives = db.Column(db.Text)
@@ -34,10 +14,9 @@ class Lesson(db.Model):
     order_num = db.Column(db.Integer, nullable=False, default=1, server_default='1')
     status = db.Column(db.String(20), nullable=False, default='draft', server_default='draft')
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, server_default=db.func.now())
-    chapter = db.relationship('Chapter', backref=db.backref('lessons',passive_deletes=True,order_by='Lesson.order_num, Lesson.id'))
+    subject = db.relationship('Subject', backref=db.backref('lessons', passive_deletes=True, order_by='Lesson.order_num, Lesson.id'))
     __table_args__ = (
-        ForeignKeyConstraint(['chapter_id','subject_id'],['chapters.id','chapters.subject_id'],ondelete='RESTRICT'),
-        UniqueConstraint('chapter_id','code',name='uq_lessons_chapter_code'),
+        UniqueConstraint('subject_id','code',name='uq_lessons_subject_code'),
         UniqueConstraint('id','subject_id',name='uq_lessons_id_subject'),
         CheckConstraint('order_num > 0',name='order'),
         CheckConstraint("length(trim(code)) > 0 AND length(trim(title)) > 0",name='nonempty'),

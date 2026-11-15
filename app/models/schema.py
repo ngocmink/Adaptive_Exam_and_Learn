@@ -48,11 +48,9 @@ class Material(db.Model):
     description = db.Column(db.Text)
     file_url = db.Column(db.Text, nullable=False)
     difficulty = db.Column(db.Numeric(), nullable=False, default=5.5, server_default='5.5')
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='RESTRICT'), index=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True, server_default=text('true'))
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, server_default=db.func.now())
     subject = db.relationship('Subject')
-    author = db.relationship('User')
     __table_args__ = (CheckConstraint('difficulty BETWEEN 1 AND 10', name='difficulty'),
         UniqueConstraint('id','subject_id',name='uq_materials_id_subject'),)
 

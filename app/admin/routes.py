@@ -105,7 +105,6 @@ def create_material():
         description=body.get("description"),
         file_url=file_url,
         difficulty=difficulty,
-        author_id=g.current_user.id,
         is_active=True,
     )
     try:

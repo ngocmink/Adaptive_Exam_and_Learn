@@ -2,33 +2,31 @@ import pytest
 from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from app.extensions import db
-from app.models import Subject, Material, Question, Chapter, Lesson, LessonMaterial, QuestionLesson
+from app.models import Subject, Material, Question, Lesson, LessonMaterial, QuestionLesson
 
 @pytest.fixture
 def hierarchy(app,demo):
     subject=db.session.scalar(select(Subject))
-    chapter=Chapter(subject_id=subject.id,code='C1',title='Chapter 1')
-    db.session.add(chapter);db.session.flush()
-    lesson=Lesson(chapter_id=chapter.id,subject_id=subject.id,code='L1',title='Lesson 1')
+    lesson=Lesson(subject_id=subject.id,code='L1',title='Lesson 1')
     db.session.add(lesson);db.session.commit()
-    return subject,chapter,lesson
+    return subject,lesson
 
 def test_reusable_material_and_question(hierarchy):
-    subject,chapter,lesson=hierarchy
-    second=Lesson(chapter_id=chapter.id,subject_id=subject.id,code='L2',title='Lesson 2',order_num=2)
+    subject,lesson=hierarchy
+    second=Lesson(subject_id=subject.id,code='L2',title='Lesson 2',order_num=2)
     db.session.add(second);db.session.flush()
     material=db.session.scalar(select(Material));question=db.session.scalar(select(Question))
     for item in (lesson,second):
         db.session.add(LessonMaterial.link(item,material))
         db.session.add(QuestionLesson.link(question,item))
     db.session.commit()
-    assert len(subject.chapters)==1 and len(chapter.lessons)==2
+    assert len(subject.lessons)==2
     assert db.session.scalar(select(LessonMaterial)).material.id==material.id
     assert db.session.query(QuestionLesson).count()==2
 
 @pytest.mark.parametrize('kind',['material','question'])
 def test_cross_subject_link_rejected_by_database(hierarchy,kind):
-    subject,chapter,lesson=hierarchy
+    subject,lesson=hierarchy
     other=Subject(code='OTHER',name='Other subject');db.session.add(other);db.session.flush()
     if kind=='material':
         content=Material(subject_id=other.id,title='Other notes',file_url='pdf/GTC1.pdf')
@@ -42,15 +40,39 @@ def test_cross_subject_link_rejected_by_database(hierarchy,kind):
     with pytest.raises(IntegrityError):db.session.commit()
     db.session.rollback()
 
-def test_wrong_chapter_subject_rejected(hierarchy):
-    subject,chapter,lesson=hierarchy
-    other=Subject(code='OTHER',name='Other');db.session.add(other);db.session.flush()
-    db.session.add(Lesson(chapter_id=chapter.id,subject_id=other.id,code='BAD',title='Bad'))
+def test_duplicate_lesson_code_within_subject_rejected(hierarchy):
+    subject,lesson=hierarchy
+    db.session.add(Lesson(subject_id=subject.id,code=lesson.code,title='Duplicate'))
     with pytest.raises(IntegrityError):db.session.commit()
     db.session.rollback()
 
+def test_lesson_code_reusable_in_other_subject(hierarchy):
+    subject,lesson=hierarchy
+    other=Subject(code='OTHER',name='Other');db.session.add(other);db.session.flush()
+    db.session.add(Lesson(subject_id=other.id,code=lesson.code,title='Other lesson'))
+    db.session.commit()
+
+def test_lesson_requires_existing_subject(hierarchy):
+    db.session.add(Lesson(subject_id=999999,code='BAD',title='Bad'))
+    with pytest.raises(IntegrityError):db.session.commit()
+    db.session.rollback()
+
+def test_material_api_excludes_author(login_as):
+    client=login_as('teacher')
+    subject=db.session.scalar(select(Subject))
+    response=client.post('/api/admin/materials',json={
+        'subject_id':subject.id,'title':'Shared notes',
+        'file_url':'https://example.com/notes.pdf','difficulty':3})
+    assert response.status_code==201
+    material_id=response.json['data']['id']
+    for path in (f'/api/materials/{material_id}','/api/admin/materials'):
+        payload=client.get(path).json['data']
+        rows=payload if isinstance(payload,list) else [payload]
+        assert rows
+        assert all('author_id' not in row and 'author_name' not in row for row in rows)
+
 def test_duplicate_link_rejected(hierarchy):
-    lesson=hierarchy[2];material=db.session.scalar(select(Material))
+    lesson=hierarchy[1];material=db.session.scalar(select(Material))
     db.session.add(LessonMaterial.link(lesson,material));db.session.commit()
     db.session.add(LessonMaterial.link(lesson,material))
     with pytest.raises(IntegrityError):db.session.commit()
@@ -58,12 +80,12 @@ def test_duplicate_link_rejected(hierarchy):
 
 @pytest.mark.parametrize('field,value',[('order_num',0),('status','unknown'),('title',' '),('code','')])
 def test_invalid_lesson_metadata_rejected(hierarchy,field,value):
-    lesson=hierarchy[2];setattr(lesson,field,value)
+    lesson=hierarchy[1];setattr(lesson,field,value)
     with pytest.raises(IntegrityError):db.session.commit()
     db.session.rollback()
 
 def test_delete_referenced_lesson_rejected(hierarchy):
-    lesson=hierarchy[2];material=db.session.scalar(select(Material))
+    lesson=hierarchy[1];material=db.session.scalar(select(Material))
     db.session.add(LessonMaterial.link(lesson,material));db.session.commit()
     with pytest.raises(IntegrityError):
         db.session.execute(text('DELETE FROM lessons WHERE id=:id'),{'id':lesson.id})

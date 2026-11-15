@@ -214,7 +214,7 @@ def test_seed_cli_requires_passwords_and_repeats(app, monkeypatch):
     assert counts() == before
 
 def test_extensions_and_models(app):
-    assert len(db.metadata.tables) == 14
+    assert len(db.metadata.tables) == 13
     extensions = set(db.session.scalars(text("SELECT extname FROM pg_extension")))
     assert {'unaccent','pg_trgm'} <= extensions
 
