@@ -46,6 +46,25 @@ def create_app(test_config=None):
 
     init_csrf(app)
     register_errors(app)
+
+    @app.template_filter("math_format")
+    def math_format(value):
+        if value is None:
+            return ""
+        text = str(value).strip()
+        if not text:
+            return ""
+        # If the text already contains any math delimiter ($ or \( or \[),
+        # do NOT wrap it! It already has math markup embedded properly.
+        if "$" in text or r"\(" in text or r"\[" in text:
+            return text
+        # Auto-wrap standalone raw LaTeX commands or math symbols
+        if "\\" in text or any(sym in text for sym in ["^", "_"]):
+            return f"\\({text}\\)"
+        if any(f" {op} " in text for op in ["+", "-", "*", "/", "="]):
+            return f"\\({text}\\)"
+        return text
+
     app.register_blueprint(subjects_bp)
     app.register_blueprint(admin_read_bp)
     app.register_blueprint(auth_bp)

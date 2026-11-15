@@ -1,231 +1,425 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Math Question</title>
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <script>
-            window.MathJax = {
-                tex: {
-                    inlineMath: [['$', '$'], ['\\(', '\\)']],
-                    displayMath: [['$$', '$$']]
-                },
-                svg: { fontCache: 'global' }
-            };
-        </script>
-    </head>
-    <body>
-      <div class="formbold-main-wrapper">
-        <div class="formbold-form-wrapper">
-          <div class="formbold-image-container">
-            <img src="{{ url_for('static', filename='images/soict.png') }}" class="formbold-image">
-            <img src="{{ url_for('static', filename='images/samsung_logo.png') }}" class="formbold-image">
-          </div>   
-          <form method="POST">
-            <div class="formbold-input-flex">
-              <div>
-                <label for="firstname" class="formbold-form-label">
-                  Đánh giá độ khó (tùy chọn)
-                </label>
-                <input
-                  type="text"
-                  name="firstname"
-                  id="firstname"
-                  placeholder="Độ khó trên thang 5"
-                  class="formbold-form-input"
-                />
-              </div>
-              <div>
-                <label for="lastname" class="formbold-form-label"> Đánh giá trải nghiệm (tùy chọn) </label>
-                <input
-                  type="text"
-                  name="lastname"
-                  id="lastname"
-                  placeholder="Trải nghiệm trên thang 5"
-                  class="formbold-form-input"
-                />
-              </div>
-            </div>
-            <div>
-              <div class="formbold-radio-flex">
-                {% for question in questions.values() %}
-                  {% if question.type == type %}
-                  <div class="formbold-radio-group">
-                      <h3>Câu {{ question.nques }}: {{ question.question | safe }}</h3>
-                      {% set question_name = 'question_' + loop.index|string %}
-                      {% for option in question.options %}
-                      <label class="formbold-radio-label">
-                          <input
-                            class="formbold-input-radio"
-                            type="radio"
-                            name="{{ question_name }}"
-                            value="{{ option }}"
-                            style="letter-spacing: 2px;"
-                          /> ${{ option | safe }}$
-                              <span class="formbold-radio-checkmark"></span>
-                      </label><br>
-                      {% endfor %}
-                  </div>
-                  {% endif %}
-                {% endfor %}
-              </div>
-            </div>
-            <button class="formbold-btn" type="submit" name="button_action" value="activated">Nộp bài</button>
-          </form>
-        </div>
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ assessment.title }} | Làm bài thi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Slab:wght@600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary: #4d4ca2;
+      --primary-hover: #3d3c88;
+      --primary-light: #f0f0fa;
+      --accent: #26264a;
+      --text: #24233a;
+      --text-muted: #55536f;
+      --bg: #f8f9fd;
+      --card-bg: #ffffff;
+      --border: #e2e1ef;
+      --success: #2e7d32;
+      --danger: #d32f2f;
+      --warning: #ed6c02;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Work Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 90px;
+    }
+    header.quiz-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 18px rgba(36, 35, 58, 0.05);
+      padding: 14px 24px;
+    }
+    .header-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--primary-hover); text-decoration: underline; }
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff3e0;
+      color: #b76e00;
+      border: 1px solid #ffe0b2;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+    }
+    .timer-badge.warning {
+      background: #ffebee;
+      color: var(--danger);
+      border-color: #ffcdd2;
+      animation: pulse 1s infinite alternate;
+    }
+    @keyframes pulse { from { opacity: 1; } to { opacity: 0.6; } }
+
+    main.quiz-main {
+      max-width: 1000px;
+      margin: 28px auto 0;
+      padding: 0 20px;
+    }
+    .assessment-intro {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .assessment-intro h1 {
+      font-family: 'Roboto Slab', serif;
+      font-size: clamp(24px, 4vw, 32px);
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .assessment-intro p.desc {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    .badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .badge-secondary { background: #eef2f6; color: #475569; }
+
+    .question-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(36, 35, 58, 0.03);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .question-card:hover {
+      border-color: #cbd5e1;
+    }
+    .question-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .q-number {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .q-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .q-topic {
+      background: #f1f5f9;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    .question-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #1e293b;
+      margin-bottom: 20px;
+      line-height: 1.7;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      background: #fafafc;
+      transition: all 0.2s ease;
+      font-size: 15px;
+      user-select: none;
+    }
+    .option-label:hover {
+      border-color: var(--primary);
+      background: #f8f8fd;
+    }
+    .option-label input[type="radio"] {
+      display: none;
+    }
+    .opt-letter {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border-radius: 50%;
+      background: #e9e8f4;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .opt-content {
+      flex: 1;
+      color: var(--text);
+    }
+    .option-label.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .option-label.selected .opt-letter {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* Fixed bottom bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 14px 24px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+      z-index: 99;
+    }
+    .bottom-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .progress-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .progress-highlight {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-submit:hover {
+      background: var(--primary-hover);
+    }
+    .btn-submit:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+  <header class="quiz-header">
+    <div class="header-content">
+      <a href="{{ url_for('library.learner_page') }}" class="back-link">← Quay lại kho học tập</a>
+      <div id="quiz-timer" class="timer-badge" role="timer" aria-live="polite">
+        ⏱️ <span id="time-left">--:--</span>
       </div>
-    </body>
+    </div>
+  </header>
+
+  <main class="quiz-main">
+    <section class="assessment-intro">
+      <h1>{{ assessment.title }}</h1>
+      {% if assessment.description %}
+        <p class="desc">{{ assessment.description }}</p>
+      {% endif %}
+      <div class="badges-row">
+        <span class="badge">{{ assessment.subject.name }}</span>
+        <span class="badge badge-secondary">Loại: {{ assessment.type }}</span>
+        <span class="badge badge-secondary">{{ aqs|length }} câu hỏi</span>
+        <span class="badge badge-secondary">Thời gian: {{ assessment.duration_minutes }} phút</span>
+        <span class="badge badge-secondary">Điểm đạt: {{ assessment.pass_score }}%</span>
+      </div>
+    </section>
+
+    {% if not aqs %}
+      <div class="question-card" style="text-align: center; padding: 40px;">
+        <p>Đề thi này hiện tại chưa có câu hỏi nào. Vui lòng quay lại sau.</p>
+        <p style="margin-top: 14px;"><a href="{{ url_for('library.learner_page') }}" class="back-link">Quay lại kho học tập</a></p>
+      </div>
+    {% else %}
+      <form id="quiz-form" method="POST" action="{{ url_for('library.quiz_page', id=assessment.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        {% set letters = ["A", "B", "C", "D"] %}
+        {% for aq in aqs %}
+          {% set q = aq.question %}
+          <article class="question-card" id="card-q{{ q.id }}">
+            <div class="question-card-header">
+              <span class="q-number">Câu {{ loop.index }}</span>
+              <div class="q-meta">
+                {% if q.topic %}<span class="q-topic">{{ q.topic }}</span>{% endif %}
+                <span>Độ khó: {{ q.difficulty }}/10</span>
+                <span>({{ aq.points }} điểm)</span>
+              </div>
+            </div>
+            <div class="question-text">{{ q.content | math_format }}</div>
+            <div class="options-grid">
+              {% for opt in q.options %}
+                {% set letter = letters[loop.index0] if loop.index0 < 4 else (loop.index|string) %}
+                <label class="option-label" data-question-id="{{ q.id }}">
+                  <input type="radio" name="question_{{ q.id }}" value="{{ opt.id }}">
+                  <span class="opt-letter">{{ letter }}</span>
+                  <span class="opt-content">{{ opt.content | math_format }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </article>
+        {% endfor %}
+
+        <div class="bottom-bar">
+          <div class="bottom-content">
+            <div class="progress-text">
+              Đã làm: <span id="answered-count" class="progress-highlight">0</span> / {{ aqs|length }} câu
+            </div>
+            <button type="submit" id="submit-btn" class="btn-submit">Nộp bài thi</button>
+          </div>
+        </div>
+      </form>
+    {% endif %}
+  </main>
+
+  <script>
+    (() => {
+      const form = document.querySelector("#quiz-form");
+      const totalQuestions = {{ aqs|length }};
+      const durationMinutes = {{ assessment.duration_minutes }};
+      const timerDisplay = document.querySelector("#time-left");
+      const timerBadge = document.querySelector("#quiz-timer");
+      const answeredCountEl = document.querySelector("#answered-count");
+
+      // Update answered count & option styling
+      function updateProgress() {
+        if (!form) return;
+        const checkedInputs = form.querySelectorAll('input[type="radio"]:checked');
+        if (answeredCountEl) answeredCountEl.textContent = checkedInputs.length;
+      }
+
+      document.querySelectorAll(".option-label").forEach((label) => {
+        const input = label.querySelector('input[type="radio"]');
+        if (!input) return;
+
+        input.addEventListener("change", () => {
+          const qId = label.dataset.questionId;
+          document.querySelectorAll(`.option-label[data-question-id="${qId}"]`).forEach((item) => {
+            item.classList.toggle("selected", item.querySelector('input[type="radio"]').checked);
+          });
+          updateProgress();
+        });
+      });
+
+      // Countdown Timer
+      let totalSeconds = durationMinutes * 60;
+      function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+
+      if (timerDisplay) {
+        timerDisplay.textContent = formatTime(totalSeconds);
+        const timerInterval = setInterval(() => {
+          totalSeconds -= 1;
+          if (totalSeconds <= 0) {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = "00:00";
+            alert("Đã hết thời gian làm bài! Hệ thống sẽ tự động nộp bài của bạn.");
+            form.submit();
+            return;
+          }
+          timerDisplay.textContent = formatTime(totalSeconds);
+          if (totalSeconds <= 300) { // Under 5 minutes
+            timerBadge?.classList.add("warning");
+          }
+        }, 1000);
+      }
+
+      // Submit confirmation
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          const answered = form.querySelectorAll('input[type="radio"]:checked').length;
+          const remaining = totalQuestions - answered;
+          if (remaining > 0) {
+            const confirmed = confirm(`Bạn còn ${remaining} câu chưa trả lời. Bạn có chắc chắn muốn nộp bài không?`);
+            if (!confirmed) {
+              e.preventDefault();
+            }
+          }
+        });
+      }
+    })();
+  </script>
+</body>
 </html>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  body {
-    font-family: 'Inter', sans-serif;
-  }
-  .formbold-main-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 48px;
-  }
-
-  .formbold-form-wrapper {
-    margin: 0 auto;
-    max-width: 570px;
-    width: 100%;
-    background: white;
-    padding: 40px;
-  }
-
-  .formbold-img {
-    margin-bottom: 40px;
-  }
-
-  .formbold-input-flex {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 30px;
-  }
-  .formbold-input-flex > div {
-    width: 50%;
-  }
-  .formbold-form-input {
-    width: 100%;
-    padding: 13px 22px;
-    border-radius: 5px;
-    border: 1px solid #dde3ec;
-    background: #ffffff;
-    font-weight: 500;
-    font-size: 16px;
-    color: #536387;
-    outline: none;
-    resize: none;
-  }
-  .formbold-form-input:focus {
-    border-color: #6a64f1;
-    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05);
-  }
-  .formbold-form-label {
-    color: #536387;
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 24px;
-    display: block;
-    margin-bottom: 10px;
-  }
-
-  .formbold-mb-5 {
-    margin-bottom: 20px;
-  }
-  .formbold-radio-flex {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .formbold-radio-label {
-    font-size: 14px;
-    line-height: 24px;
-    color: #07074d;
-    position: relative;
-    padding-left: 25px;
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-  .formbold-input-radio {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-  }
-  .formbold-radio-checkmark {
-    position: absolute;
-    top: -1px;
-    left: 0;
-    height: 18px;
-    width: 18px;
-    background-color: #ffffff;
-    border: 1px solid #dde3ec;
-    border-radius: 50%;
-  }
-  .formbold-radio-label
-    .formbold-input-radio:checked
-    ~ .formbold-radio-checkmark {
-    background-color: #6a64f1;
-  }
-  .formbold-radio-checkmark:after {
-    content: '';
-    position: absolute;
-    display: none;
-  }
-
-  .formbold-radio-label
-    .formbold-input-radio:checked
-    ~ .formbold-radio-checkmark:after {
-    display: block;
-  }
-
-  .formbold-radio-label .formbold-radio-checkmark:after {
-    top: 50%;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #ffffff;
-    transform: translate(-50%, -50%);
-  }
-
-  .formbold-btn {
-    text-align: center;
-    width: 100%;
-    font-size: 16px;
-    border-radius: 5px;
-    padding: 14px 25px;
-    border: none;
-    font-weight: 500;
-    background-color: #6a64f1;
-    color: white;
-    cursor: pointer;
-    margin-top: 25px;
-  }
-  .formbold-btn:hover {
-    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05);
-  }
-  .formbold-image {
-    display: block;
-    margin-bottom: 5px;
-  }
-  .formbold-image-container {
-    display: flex;
-    gap: 10px; /* Khoảng cách giữa các hình ảnh */
-    margin-bottom: 20px; /* Khoảng cách giữa ảnh và phần form */
-    align-items: center; /* Căn giữa các hình ảnh theo chiều dọc */
-}
-</style>

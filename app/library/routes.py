@@ -1,4 +1,4 @@
-from flask import Blueprint, g, render_template, request
+from flask import Blueprint, g, redirect, render_template, request, url_for
 from sqlalchemy import func, or_, select
 
 from app.common.decorators import login_required
@@ -7,6 +7,7 @@ from app.common.model_registry import get_model
 from app.common.pagination import get_page_args, pagination_data
 from app.common.responses import error_response, success_response
 from app.extensions import db
+from app.models.schema import utcnow
 
 
 library_bp = Blueprint("library", __name__)
@@ -33,6 +34,151 @@ def reading_page():
     if material is None or not material.is_active:
         return error_response("Không tìm thấy tài liệu.", status=404)
     return render_template("material_reader.html", material=material, user=g.current_user)
+
+
+@library_bp.route("/quiz", methods=["GET", "POST"])
+@login_required
+def quiz_page():
+    try:
+        assessment_id = int(request.args.get("id", ""))
+        Assessment = get_model("Assessment")
+        Attempt = get_model("Attempt")
+        AttemptAnswer = get_model("AttemptAnswer")
+    except (ValueError, TypeError):
+        return error_response("Thiếu hoặc sai mã đề thi.", status=400)
+    except RuntimeError as exc:
+        return error_response(str(exc), status=503)
+
+    assessment = db.session.get(Assessment, assessment_id)
+    if assessment is None or not assessment.is_active:
+        return error_response("Không tìm thấy đề thi.", status=404)
+
+    aqs = sorted(
+        [aq for aq in assessment.assessment_questions if aq.question and aq.question.is_active],
+        key=lambda item: item.order_num,
+    )
+
+    if request.method == "POST":
+        now = utcnow()
+        attempt = Attempt(
+            user_id=g.current_user.id,
+            assessment_id=assessment.id,
+            total_questions=len(aqs),
+            correct_answers=0,
+            score=0.0,
+            start_time=now,
+            submit_time=now,
+            status="completed",
+        )
+        db.session.add(attempt)
+        db.session.flush()
+
+        correct_count = 0
+        total_points = sum(aq.points for aq in aqs) or float(len(aqs)) or 1.0
+        earned_points = 0.0
+
+        for aq in aqs:
+            q = aq.question
+            selected_str = request.form.get(f"question_{q.id}")
+            selected_option_id = None
+            is_correct = False
+            if selected_str:
+                try:
+                    selected_val = int(selected_str)
+                    matching_opt = next((opt for opt in q.options if opt.id == selected_val), None)
+                    if matching_opt:
+                        selected_option_id = matching_opt.id
+                        is_correct = bool(matching_opt.is_correct)
+                except (ValueError, TypeError):
+                    pass
+
+            if is_correct:
+                correct_count += 1
+                earned_points += aq.points
+
+            db.session.add(
+                AttemptAnswer(
+                    attempt_id=attempt.id,
+                    question_id=q.id,
+                    selected_option_id=selected_option_id,
+                    is_correct=is_correct,
+                )
+            )
+
+        attempt.correct_answers = correct_count
+        score_percent = round((earned_points / total_points) * 100, 1)
+        attempt.score = score_percent
+        db.session.commit()
+
+        return redirect(url_for("library.quiz_results", attempt_id=attempt.id))
+
+    return render_template(
+        "quiz.html",
+        assessment=assessment,
+        aqs=aqs,
+        user=g.current_user,
+    )
+
+
+@library_bp.get("/quiz/results")
+@login_required
+def quiz_results():
+    try:
+        attempt_id = int(request.args.get("attempt_id", ""))
+        Attempt = get_model("Attempt")
+        Assessment = get_model("Assessment")
+        AttemptAnswer = get_model("AttemptAnswer")
+    except (ValueError, TypeError):
+        return error_response("Thiếu hoặc sai mã kết quả làm bài.", status=400)
+    except RuntimeError as exc:
+        return error_response(str(exc), status=503)
+
+    attempt = db.session.get(Attempt, attempt_id)
+    if attempt is None or attempt.user_id != g.current_user.id:
+        return error_response("Không tìm thấy kết quả làm bài.", status=404)
+
+    assessment = db.session.get(Assessment, attempt.assessment_id)
+    if assessment is None:
+        return error_response("Không tìm thấy đề thi tương ứng.", status=404)
+
+    aqs = sorted(
+        [aq for aq in assessment.assessment_questions if aq.question and aq.question.is_active],
+        key=lambda item: item.order_num,
+    )
+    answers = db.session.scalars(
+        select(AttemptAnswer).where(AttemptAnswer.attempt_id == attempt.id)
+    ).all()
+    answer_map = {ans.question_id: ans for ans in answers}
+
+    review_list = []
+    for aq in aqs:
+        q = aq.question
+        user_ans = answer_map.get(q.id)
+        selected_id = user_ans.selected_option_id if user_ans else None
+        is_ans_correct = user_ans.is_correct if user_ans else False
+        correct_option = next((opt for opt in q.options if opt.is_correct), None)
+        selected_option = next((opt for opt in q.options if opt.id == selected_id), None)
+
+        review_list.append({
+            "order_num": aq.order_num,
+            "question": q,
+            "points": aq.points,
+            "selected_option": selected_option,
+            "correct_option": correct_option,
+            "is_correct": is_ans_correct,
+            "explanation": q.explanation,
+        })
+
+    is_passed = (attempt.score or 0.0) >= assessment.pass_score
+
+    return render_template(
+        "results.html",
+        assessment=assessment,
+        attempt=attempt,
+        is_passed=is_passed,
+        review_list=review_list,
+        user=g.current_user,
+    )
 
 
 def _as_int(value, field_name):
@@ -81,7 +227,9 @@ def list_materials():
 
         search = request.args.get("search", "").strip()
         if search:
-            stmt = stmt.where(Material.title.ilike("%{}%".format(search)))
+            stmt = stmt.where(
+                func.unaccent(Material.title).ilike(func.unaccent("%{}%".format(search)))
+            )
 
         subject_id = request.args.get("subject_id")
         if subject_id:
@@ -129,8 +277,12 @@ def list_assessments():
         if search:
             stmt = stmt.where(
                 or_(
-                    Assessment.title.ilike("%{}%".format(search)),
-                    Assessment.description.ilike("%{}%".format(search)),
+                    func.unaccent(Assessment.title).ilike(
+                        func.unaccent("%{}%".format(search))
+                    ),
+                    func.unaccent(func.coalesce(Assessment.description, "")).ilike(
+                        func.unaccent("%{}%".format(search))
+                    ),
                 )
             )
 

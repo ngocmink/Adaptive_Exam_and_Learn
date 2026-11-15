@@ -1,29 +1,384 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kết Quả Quiz</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$']]
-            },
-            svg: { fontCache: 'global' }
-        };
-    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kết quả bài thi | {{ assessment.title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Slab:wght@600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary: #4d4ca2;
+      --primary-hover: #3d3c88;
+      --primary-light: #f0f0fa;
+      --accent: #26264a;
+      --text: #24233a;
+      --text-muted: #55536f;
+      --bg: #f8f9fd;
+      --card-bg: #ffffff;
+      --border: #e2e1ef;
+      --success: #2e7d32;
+      --success-light: #e8f5e9;
+      --danger: #d32f2f;
+      --danger-light: #ffebee;
+      --warning: #ed6c02;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Work Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+    header.results-header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .header-content {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .back-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    main.results-main {
+      max-width: 900px;
+      margin: 32px auto 0;
+      padding: 0 20px;
+    }
+
+    .summary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 36px 28px;
+      text-align: center;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 30px rgba(36, 35, 58, 0.04);
+    }
+    .summary-card h1 {
+      font-family: 'Roboto Slab', serif;
+      font-size: clamp(22px, 3.5vw, 30px);
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .summary-sub {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    .score-circle {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    }
+    .score-circle.passed {
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border: 3px solid var(--success);
+      color: var(--success);
+    }
+    .score-circle.failed {
+      background: linear-gradient(135deg, #ffebee, #ffcdd2);
+      border: 3px solid var(--danger);
+      color: var(--danger);
+    }
+    .score-number {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .score-unit {
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+    .status-badge.passed {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    .status-badge.failed {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-box {
+      background: #fafafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .actions-row {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #f5f5fa; }
+
+    /* Review section */
+    .review-section {
+      margin-top: 40px;
+    }
+    .review-title {
+      font-family: 'Roboto Slab', serif;
+      font-size: 22px;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .review-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+    .review-card.correct { border-left: 5px solid var(--success); }
+    .review-card.incorrect { border-left: 5px solid var(--danger); }
+
+    .review-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .review-q-num {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--accent);
+    }
+    .review-status {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .review-status.correct { background: var(--success-light); color: var(--success); }
+    .review-status.incorrect { background: var(--danger-light); color: var(--danger); }
+
+    .review-q-text {
+      font-size: 16px;
+      margin-bottom: 16px;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+    .review-answer-box {
+      font-size: 15px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .review-user-ans {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+    .review-user-ans.correct {
+      background: var(--success-light);
+      border-color: #c8e6c9;
+      color: var(--success);
+    }
+    .review-user-ans.incorrect {
+      background: var(--danger-light);
+      border-color: #ffcdd2;
+      color: var(--danger);
+    }
+    .review-correct-ans {
+      background: var(--success-light);
+      border: 1px solid #c8e6c9;
+      color: var(--success);
+    }
+    .review-explanation {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: #fff9e6;
+      border: 1px solid #ffe8a3;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #7a5800;
+    }
+    .explanation-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Kết Quả Quiz</h1>
-    <p>Điểm của bạn: {{ score }} / {{ total_questions }}</p>
-    {% if rate == 0 %}
-        <p>Tài liệu tham khảo thêm: {{ chat_response }}</p>
-    {% else %}
-        <p>Nhận xét: {{ chat_response }}</p>
-    {% endif %}
-    <a href="{{ url_for('reading') }}">Làm lại quiz</a>
+  <header class="results-header">
+    <div class="header-content">
+      <a href="{{ url_for('library.learner_page') }}" class="back-link">← Quay lại kho học tập</a>
+      <span style="font-size: 14px; color: var(--text-muted);">Học viên: <strong>{{ user.full_name }}</strong></span>
+    </div>
+  </header>
+
+  <main class="results-main">
+    <section class="summary-card">
+      <h1>Kết quả bài thi</h1>
+      <p class="summary-sub">{{ assessment.title }} ({{ assessment.subject.name }})</p>
+
+      <div class="score-circle {{ 'passed' if is_passed else 'failed' }}">
+        <div class="score-number">{{ attempt.score|round(1) }}</div>
+        <div class="score-unit">Điểm / 100</div>
+      </div>
+
+      <div>
+        {% if is_passed %}
+          <span class="status-badge passed">🎉 ĐẠT YÊU CẦU</span>
+        {% else %}
+          <span class="status-badge failed">⚠️ CHƯA ĐẠT (Điểm đạt: {{ assessment.pass_score }}%)</span>
+        {% endif %}
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Số câu đúng</div>
+          <div class="stat-value">{{ attempt.correct_answers }} / {{ attempt.total_questions }}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Tỷ lệ chính xác</div>
+          <div class="stat-value">
+            {% if attempt.total_questions > 0 %}
+              {{ ((attempt.correct_answers / attempt.total_questions) * 100)|round(1) }}%
+            {% else %}
+              0%
+            {% endif %}
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Điểm sàn yêu cầu</div>
+          <div class="stat-value">{{ assessment.pass_score }}%</div>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <a href="{{ url_for('library.quiz_page', id=assessment.id) }}" class="btn btn-primary">Làm lại bài thi</a>
+        <a href="{{ url_for('library.learner_page') }}" class="btn btn-secondary">Quay lại kho học tập</a>
+      </div>
+    </section>
+
+    <section class="review-section">
+      <h2 class="review-title">Chi tiết bài làm</h2>
+
+      {% for item in review_list %}
+        <article class="review-card {{ 'correct' if item.is_correct else 'incorrect' }}">
+          <div class="review-card-header">
+            <span class="review-q-num">Câu {{ item.order_num }}</span>
+            <span class="review-status {{ 'correct' if item.is_correct else 'incorrect' }}">
+              {% if item.is_correct %}
+                ✓ Đúng (+{{ item.points }} điểm)
+              {% else %}
+                ✗ Sai (0 điểm)
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="review-q-text">{{ item.question.content | math_format }}</div>
+
+          <div class="review-answer-box review-user-ans {{ 'correct' if item.is_correct else 'incorrect' }}">
+            <strong>Đáp án bạn chọn:</strong>
+            {% if item.selected_option %}
+              {{ item.selected_option.content | math_format }}
+            {% else %}
+              <em>(Chưa trả lời)</em>
+            {% endif %}
+          </div>
+
+          {% if not item.is_correct and item.correct_option %}
+            <div class="review-answer-box review-correct-ans">
+              <strong>Đáp án đúng:</strong> {{ item.correct_option.content | math_format }}
+            </div>
+          {% endif %}
+
+          {% if item.explanation %}
+            <div class="review-explanation">
+              <div class="explanation-title">💡 Giải thích:</div>
+              <div>{{ item.explanation | math_format }}</div>
+            </div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </section>
+  </main>
 </body>
 </html>

@@ -1,15 +1,21 @@
-﻿(() => {
+(() => {
   const config = window.accountDashboardConfig;
   const subjectFilter = document.querySelector("#subject-filter");
   const subjectMessage = document.querySelector("#subject-message");
+  const searchInput = document.querySelector("#content-search");
+  const paginationNav = document.querySelector("#account-pagination");
   const cards = document.querySelector("#account-cards");
   const message = document.querySelector("#account-message");
   const tabs = Array.from(document.querySelectorAll(".learner-tab"));
   const logoutButton = document.querySelector("#logout-button");
   if (!config || !subjectFilter || !cards || !message) return;
 
+  const PAGE_SIZE = 8;
   let kind = "materials";
   let recordsRequestId = 0;
+  let currentPage = 1;
+  let searchQuery = "";
+  let searchDebounceTimer = null;
 
   async function getJson(url) {
     const response = await fetch(url, { headers: { Accept: "application/json" } });
@@ -55,6 +61,26 @@
     }
 
     return records;
+  }
+
+  async function fetchPage(endpoint, filters = {}, page = 1, limit = PAGE_SIZE) {
+    const url = new URL(endpoint, window.location.origin);
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("limit", String(limit));
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== "" && value !== null && value !== undefined) {
+        url.searchParams.set(key, String(value));
+      }
+    });
+
+    const body = await getJson(url);
+    if (!Array.isArray(body.data)) {
+      throw new Error("Dữ liệu trả về không đúng định dạng.");
+    }
+    return {
+      records: body.data,
+      pagination: body.pagination || { page: 1, limit, total_records: body.data.length, total_pages: 1 }
+    };
   }
 
   function appendText(parent, tagName, text, className) {
@@ -104,9 +130,80 @@
       link.className = "learner-card-link";
       link.textContent = "Mở tài liệu";
       card.append(link);
+    } else {
+      const link = document.createElement("a");
+      const quizUrl = new URL(config.quizUrl, window.location.origin);
+      quizUrl.searchParams.set("id", String(record.id));
+      link.href = quizUrl.pathname + quizUrl.search;
+      link.className = "learner-card-link learner-card-btn-quiz";
+      link.textContent = "Làm bài";
+      card.append(link);
     }
 
     return card;
+  }
+
+  function renderPagination(pagination) {
+    if (!paginationNav) return;
+    paginationNav.replaceChildren();
+
+    const totalPages = Number(pagination.total_pages) || 1;
+    if (totalPages <= 1) return;
+
+    const page = Number(pagination.page) || 1;
+
+    function createButton(text, targetPage, disabled = false, isActive = false, ariaLabel = "") {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "learner-page-btn" + (isActive ? " active" : "");
+      btn.textContent = text;
+      if (ariaLabel) btn.setAttribute("aria-label", ariaLabel);
+      if (isActive) btn.setAttribute("aria-current", "page");
+      if (disabled) {
+        btn.disabled = true;
+      } else if (!isActive) {
+        btn.addEventListener("click", () => {
+          document.querySelector("#courses")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          loadRecords(targetPage);
+        });
+      }
+      return btn;
+    }
+
+    paginationNav.append(createButton("« Trước", page - 1, page <= 1, false, "Trang trước"));
+
+    const maxVisible = 5;
+    let startPage = Math.max(1, page - 2);
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    if (endPage - startPage < maxVisible - 1) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    if (startPage > 1) {
+      paginationNav.append(createButton("1", 1, false, page === 1, "Trang 1"));
+      if (startPage > 2) {
+        const dots = document.createElement("span");
+        dots.className = "learner-page-dots";
+        dots.textContent = "…";
+        paginationNav.append(dots);
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      paginationNav.append(createButton(String(i), i, false, page === i, "Trang " + i));
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        const dots = document.createElement("span");
+        dots.className = "learner-page-dots";
+        dots.textContent = "…";
+        paginationNav.append(dots);
+      }
+      paginationNav.append(createButton(String(totalPages), totalPages, false, page === totalPages, "Trang " + totalPages));
+    }
+
+    paginationNav.append(createButton("Sau »", page + 1, page >= totalPages, false, "Trang sau"));
   }
 
   async function loadSubjects() {
@@ -125,33 +222,69 @@
     }
   }
 
-  async function loadRecords() {
+  async function loadRecords(targetPage = 1) {
+    currentPage = targetPage;
     const requestId = ++recordsRequestId;
     const requestedKind = kind;
     const requestedSubject = subjectFilter.value;
+    const requestedSearch = searchQuery;
     message.textContent = "Đang tải nội dung học tập…";
     cards.replaceChildren();
+    if (paginationNav) paginationNav.replaceChildren();
+
     const endpoint = requestedKind === "materials" ? config.materialsUrl : config.assessmentsUrl;
-    const filters = requestedSubject ? { subject_id: requestedSubject } : {};
+    const filters = {};
+    if (requestedSubject) filters.subject_id = requestedSubject;
+    if (requestedSearch) filters.search = requestedSearch;
 
     try {
-      const records = await getAllPages(endpoint, filters);
+      const { records, pagination } = await fetchPage(endpoint, filters, currentPage, PAGE_SIZE);
       if (requestId !== recordsRequestId) return;
       if (!records.length) {
-        message.textContent = requestedKind === "materials"
-          ? "Môn học này chưa có tài liệu phù hợp."
-          : "Môn học này chưa có đề ôn tập phù hợp.";
+        if (requestedSearch) {
+          message.textContent = `Không tìm thấy nội dung phù hợp với "${requestedSearch}".`;
+        } else {
+          message.textContent = requestedKind === "materials"
+            ? "Môn học này chưa có tài liệu phù hợp."
+            : "Môn học này chưa có đề ôn tập phù hợp.";
+        }
         return;
       }
       records.forEach((record) => cards.append(createCard(record, requestedKind)));
       message.textContent = "";
+      renderPagination(pagination);
     } catch (error) {
       if (requestId !== recordsRequestId) return;
       message.textContent = error.message || "Không thể tải nội dung lúc này.";
     }
   }
 
-  subjectFilter.addEventListener("change", loadRecords);
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        searchQuery = searchInput.value.trim();
+        loadRecords(1);
+      }, 350);
+    });
+
+    searchInput.addEventListener("search", () => {
+      searchQuery = searchInput.value.trim();
+      loadRecords(1);
+    });
+
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        clearTimeout(searchDebounceTimer);
+        searchQuery = searchInput.value.trim();
+        loadRecords(1);
+      }
+    });
+  }
+
+  subjectFilter.addEventListener("change", () => loadRecords(1));
+
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       kind = tab.dataset.kind === "assessments" ? "assessments" : "materials";
@@ -160,7 +293,7 @@
         item.classList.toggle("active", active);
         item.setAttribute("aria-selected", String(active));
       });
-      loadRecords();
+      loadRecords(1);
     });
   });
 
@@ -189,5 +322,5 @@
   }
 
   loadSubjects();
-  loadRecords();
+  loadRecords(1);
 })();

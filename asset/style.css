@@ -635,6 +635,36 @@ summary {
   opacity: .6;
 }
 
+.learner-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: min(260px, 100%);
+  flex: 1 1 220px;
+}
+
+.learner-search-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid #d5d4e6;
+  border-radius: 10px;
+  background: #fff;
+  color: #24233a;
+  font: 15px "Work Sans", sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.learner-search-input:focus {
+  outline: none;
+  border-color: #4d4ca2;
+  box-shadow: 0 0 0 3px rgba(77, 76, 162, 0.15);
+}
+
+.learner-search-input::placeholder {
+  color: #8c8aa5;
+}
+
 .learner-tabs {
   display: flex;
   gap: 8px;
@@ -705,6 +735,56 @@ summary {
 
 .learner-card-link:hover {
   background: #d4d5ff;
+}
+
+.learner-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+}
+
+.learner-page-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d8d8e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #38366c;
+  font: 600 14px "Work Sans", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.learner-page-btn:hover:not(:disabled) {
+  border-color: #4d4ca2;
+  color: #4d4ca2;
+  background: #f7f7fc;
+}
+
+.learner-page-btn.active {
+  background: #4d4ca2;
+  border-color: #4d4ca2;
+  color: #fff;
+  cursor: default;
+}
+
+.learner-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.learner-page-dots {
+  color: #8886a3;
+  padding: 0 4px;
+  font-weight: 600;
+  user-select: none;
 }
 
 .learner-account .about img,
@@ -807,6 +887,10 @@ summary {
   }
 
   #subject-filter {
+    width: 100%;
+  }
+
+  .learner-search-wrapper {
     width: 100%;
   }
 

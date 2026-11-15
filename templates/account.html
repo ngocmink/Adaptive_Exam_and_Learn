@@ -63,6 +63,9 @@
           <select id="subject-filter" aria-label="Lọc theo môn học">
             <option value="">Tất cả môn học</option>
           </select>
+          <div class="learner-search-wrapper">
+            <input type="search" id="content-search" class="learner-search-input" placeholder="Tìm kiếm tài liệu, đề thi..." aria-label="Tìm kiếm nội dung">
+          </div>
           <div class="learner-tabs" role="tablist" aria-label="Loại nội dung">
             <button class="learner-tab active" id="materials-tab" type="button" role="tab" aria-selected="true" data-kind="materials">Tài liệu</button>
             <button class="learner-tab" id="assessments-tab" type="button" role="tab" aria-selected="false" data-kind="assessments">Đề ôn tập</button>
@@ -71,6 +74,7 @@
         <p id="subject-message" class="learner-subject-message" role="status" aria-live="polite"></p>
         <p id="account-message" class="learner-message" role="status" aria-live="polite">Đang tải nội dung học tập…</p>
         <div id="account-cards" class="learner-cards" aria-live="polite"></div>
+        <nav id="account-pagination" class="learner-pagination" aria-label="Phân trang" aria-live="polite"></nav>
       </div>
     </section>
 
@@ -132,6 +136,7 @@
       materialsUrl: {{ url_for('library.list_materials')|tojson }},
       assessmentsUrl: {{ url_for('library.list_assessments')|tojson }},
       readingUrl: {{ url_for('library.reading_page')|tojson }},
+      quizUrl: {{ url_for('library.quiz_page')|tojson }},
       logoutUrl: {{ url_for('auth.logout')|tojson }},
       loginUrl: {{ url_for('auth.login_page')|tojson }}
     };
