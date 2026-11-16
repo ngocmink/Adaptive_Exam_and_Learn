@@ -278,7 +278,7 @@ def list_materials():
         if difficulty:
             stmt = stmt.where(Material.difficulty == parse_difficulty(difficulty))
 
-        stmt = stmt.order_by(Material.id.desc())
+        stmt = stmt.order_by(Material.id.asc())
         result = db.paginate(stmt, page=page, per_page=limit, error_out=False)
     except ValueError as exc:
         return error_response(str(exc), status=400)
@@ -347,7 +347,7 @@ def list_assessments():
                 return error_response("type không hợp lệ.", status=400)
             stmt = stmt.where(Assessment.type == assessment_type)
 
-        stmt = stmt.order_by(Assessment.id.desc())
+        stmt = stmt.order_by(Assessment.id.asc())
         result = db.paginate(stmt, page=page, per_page=limit, error_out=False)
         data = []
         for assessment in result.items:
