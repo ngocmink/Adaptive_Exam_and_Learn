@@ -43,6 +43,7 @@ def create_app(test_config=None):
     from app.subject_routes import subjects_bp
     from app.admin.read_routes import admin_read_bp
     from app.seed.import_excel import seed_command, import_command
+    from app.seed.import_database_excel import import_db_command
 
     init_csrf(app)
     register_errors(app)
@@ -72,6 +73,7 @@ def create_app(test_config=None):
     app.register_blueprint(admin_bp)
     app.cli.add_command(seed_command)
     app.cli.add_command(import_command)
+    app.cli.add_command(import_db_command)
 
     @app.get("/")
     def home_page():
