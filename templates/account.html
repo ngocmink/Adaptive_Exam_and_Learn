@@ -59,9 +59,9 @@
       <h1 class="title" id="course-title">Kho học tập của bạn</h1>
       <div class="learner-library">
         <div class="learner-toolbar">
-          <label class="learner-subject-label" for="subject-filter">Môn học</label>
-          <select id="subject-filter" aria-label="Lọc theo môn học">
-            <option value="">Tất cả môn học</option>
+          <label class="learner-subject-label" for="subject-filter">Chủ đề bài học</label>
+          <select id="subject-filter" aria-label="Lọc theo bài học hoặc chủ đề">
+            <option value="">Tất cả chủ đề</option>
           </select>
           <div class="learner-search-wrapper">
             <input type="search" id="content-search" class="learner-search-input" placeholder="Tìm kiếm tài liệu, đề thi..." aria-label="Tìm kiếm nội dung">
@@ -133,6 +133,7 @@
   <script>
     window.accountDashboardConfig = {
       subjectsUrl: {{ url_for('subjects_read.subjects')|tojson }},
+      lessonsUrl: {{ url_for('subjects_read.lessons')|tojson }},
       materialsUrl: {{ url_for('library.list_materials')|tojson }},
       assessmentsUrl: {{ url_for('library.list_assessments')|tojson }},
       readingUrl: {{ url_for('library.reading_page')|tojson }},

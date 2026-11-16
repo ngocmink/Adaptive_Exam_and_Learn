@@ -212,10 +212,18 @@ def _as_int(value, field_name):
 
 def _material_data(material):
     subject = getattr(material, "subject", None)
+    from app.models.hierarchy import Lesson, LessonMaterial
+    lm = db.session.scalar(
+        select(Lesson)
+        .join(LessonMaterial, LessonMaterial.lesson_id == Lesson.id)
+        .where(LessonMaterial.material_id == material.id)
+    )
     return {
         "id": material.id,
         "subject_id": material.subject_id,
         "subject_name": getattr(subject, "name", None),
+        "lesson_code": lm.code if lm else None,
+        "lesson_title": lm.title if lm else None,
         "title": material.title,
         "description": material.description,
         "file_url": material.file_url,
@@ -258,6 +266,13 @@ def list_materials():
         subject_id = request.args.get("subject_id")
         if subject_id:
             stmt = stmt.where(Material.subject_id == _as_int(subject_id, "subject_id"))
+
+        lesson_id = request.args.get("lesson_id")
+        if lesson_id:
+            from app.models.hierarchy import LessonMaterial
+            stmt = stmt.join(LessonMaterial, LessonMaterial.material_id == Material.id).where(
+                LessonMaterial.lesson_id == _as_int(lesson_id, "lesson_id")
+            )
 
         difficulty = request.args.get("difficulty", "").strip().lower()
         if difficulty:
@@ -313,6 +328,18 @@ def list_assessments():
         subject_id = request.args.get("subject_id")
         if subject_id:
             stmt = stmt.where(Assessment.subject_id == _as_int(subject_id, "subject_id"))
+
+        lesson_id = request.args.get("lesson_id")
+        if lesson_id:
+            from app.models.hierarchy import QuestionLesson
+            lid = _as_int(lesson_id, "lesson_id")
+            stmt = stmt.where(
+                Assessment.id.in_(
+                    select(AssessmentQuestion.assessment_id)
+                    .join(QuestionLesson, QuestionLesson.question_id == AssessmentQuestion.question_id)
+                    .where(QuestionLesson.lesson_id == lid)
+                )
+            )
 
         assessment_type = request.args.get("type", "").strip().lower()
         if assessment_type:

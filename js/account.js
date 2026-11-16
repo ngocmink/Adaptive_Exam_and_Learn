@@ -98,7 +98,9 @@
 
     const metadata = document.createElement("p");
     metadata.className = "learner-card-meta";
-    const facts = [record.subject_name];
+    const facts = [];
+    if (record.lesson_code) facts.push(record.lesson_code);
+    if (record.subject_name) facts.push(record.subject_name);
     if (recordKind === "materials") {
       if (record.difficulty !== null && record.difficulty !== undefined) {
         facts.push("Độ khó " + record.difficulty + "/10");
@@ -206,19 +208,35 @@
     paginationNav.append(createButton("Sau »", page + 1, page >= totalPages, false, "Trang sau"));
   }
 
-  async function loadSubjects() {
+  async function loadLessons() {
     try {
-      const subjects = await getAllPages(config.subjectsUrl);
-      subjects.forEach((subject) => {
-        const option = document.createElement("option");
-        option.value = String(subject.id);
-        option.textContent = subject.name;
-        subjectFilter.append(option);
+      const endpoint = config.lessonsUrl || config.subjectsUrl;
+      const items = await getAllPages(endpoint);
+      const optgroups = {};
+      items.forEach((item) => {
+        if (item.code && item.title) {
+          const groupName = item.subject_name || "Môn học";
+          if (!optgroups[groupName]) {
+            const optgroup = document.createElement("optgroup");
+            optgroup.label = groupName;
+            subjectFilter.append(optgroup);
+            optgroups[groupName] = optgroup;
+          }
+          const option = document.createElement("option");
+          option.value = String(item.id);
+          option.textContent = `${item.code} - ${item.title}`;
+          optgroups[groupName].append(option);
+        } else {
+          const option = document.createElement("option");
+          option.value = String(item.id);
+          option.textContent = item.name || item.title;
+          subjectFilter.append(option);
+        }
       });
       if (subjectMessage) subjectMessage.textContent = "";
     } catch (error) {
       subjectFilter.disabled = true;
-      if (subjectMessage) subjectMessage.textContent = "Không tải được danh sách môn học. " + error.message;
+      if (subjectMessage) subjectMessage.textContent = "Không tải được danh sách chủ đề bài học. " + error.message;
     }
   }
 
@@ -226,7 +244,7 @@
     currentPage = targetPage;
     const requestId = ++recordsRequestId;
     const requestedKind = kind;
-    const requestedSubject = subjectFilter.value;
+    const requestedLesson = subjectFilter.value;
     const requestedSearch = searchQuery;
     message.textContent = "Đang tải nội dung học tập…";
     cards.replaceChildren();
@@ -234,7 +252,7 @@
 
     const endpoint = requestedKind === "materials" ? config.materialsUrl : config.assessmentsUrl;
     const filters = {};
-    if (requestedSubject) filters.subject_id = requestedSubject;
+    if (requestedLesson) filters.lesson_id = requestedLesson;
     if (requestedSearch) filters.search = requestedSearch;
 
     try {
@@ -245,8 +263,8 @@
           message.textContent = `Không tìm thấy nội dung phù hợp với "${requestedSearch}".`;
         } else {
           message.textContent = requestedKind === "materials"
-            ? "Môn học này chưa có tài liệu phù hợp."
-            : "Môn học này chưa có đề ôn tập phù hợp.";
+            ? "Chủ đề này chưa có tài liệu phù hợp."
+            : "Chủ đề này chưa có đề ôn tập phù hợp.";
         }
         return;
       }
@@ -321,6 +339,6 @@
     });
   }
 
-  loadSubjects();
+  loadLessons();
   loadRecords(1);
 })();
