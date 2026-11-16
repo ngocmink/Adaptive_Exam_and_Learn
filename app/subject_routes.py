@@ -24,7 +24,7 @@ def lessons():
     stmt = (
         select(Lesson)
         .join(Subject, Subject.id == Lesson.subject_id)
-        .where(Subject.is_active.is_(True), Lesson.status == 'published')
+        .where(Subject.is_active.is_(True), Lesson.status.in_(['published', 'draft']))
     )
     if subject_id:
         try:

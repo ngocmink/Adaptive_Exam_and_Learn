@@ -213,18 +213,36 @@ def _as_int(value, field_name):
 def _material_data(material):
     subject = getattr(material, "subject", None)
     from app.models.hierarchy import Lesson, LessonMaterial
-    lm = db.session.scalar(
+    lms = db.session.scalars(
         select(Lesson)
         .join(LessonMaterial, LessonMaterial.lesson_id == Lesson.id)
         .where(LessonMaterial.material_id == material.id)
-    )
+        .order_by(Lesson.order_num)
+    ).all()
+
+    if lms:
+        if len(lms) == 1:
+            lesson_code = lms[0].code
+            lesson_title = lms[0].title
+            dynamic_title = f"{lms[0].code}: {lms[0].title}"
+        else:
+            codes = " & ".join(l.code.split("-")[-1] if idx > 0 else l.code for idx, l in enumerate(lms))
+            titles = " & ".join(l.title for l in lms)
+            lesson_code = codes
+            lesson_title = titles
+            dynamic_title = f"{codes}: {titles}"
+    else:
+        lesson_code = None
+        lesson_title = None
+        dynamic_title = material.title
+
     return {
         "id": material.id,
         "subject_id": material.subject_id,
         "subject_name": getattr(subject, "name", None),
-        "lesson_code": lm.code if lm else None,
-        "lesson_title": lm.title if lm else None,
-        "title": material.title,
+        "lesson_code": lesson_code,
+        "lesson_title": lesson_title,
+        "title": dynamic_title,
         "description": material.description,
         "file_url": material.file_url,
         "storage_bucket": material.storage_bucket,
@@ -278,7 +296,13 @@ def list_materials():
         if difficulty:
             stmt = stmt.where(Material.difficulty == parse_difficulty(difficulty))
 
-        stmt = stmt.order_by(Material.id.asc())
+        from app.models.hierarchy import Lesson, LessonMaterial
+        stmt = (
+            stmt.outerjoin(LessonMaterial, LessonMaterial.material_id == Material.id)
+            .outerjoin(Lesson, Lesson.id == LessonMaterial.lesson_id)
+            .group_by(Material.id)
+            .order_by(func.min(func.coalesce(Lesson.order_num, 9999)).asc(), Material.id.asc())
+        )
         result = db.paginate(stmt, page=page, per_page=limit, error_out=False)
     except ValueError as exc:
         return error_response(str(exc), status=400)
