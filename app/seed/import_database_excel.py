@@ -149,11 +149,20 @@ def import_database_excel(file_path):
             mid = _as_int(row.get("id"))
             sid = _as_int(row.get("subject_id"))
             file_url = _as_str(row.get("file_url"))
-            if not sid or not file_url or sid not in subject_map:
+            storage_path = _as_str(row.get("storage_path"))
+            storage_bucket = _as_str(row.get("storage_bucket"))
+
+            if not sid or sid not in subject_map:
+                continue
+            if not file_url and not storage_path:
                 continue
             # Skip draft placeholder notes like (chỗ này t sẽ tải slide lên...)
-            if file_url.startswith("(") and file_url.endswith(")"):
+            if file_url and file_url.startswith("(") and file_url.endswith(")"):
                 continue
+
+            if storage_path and not storage_bucket:
+                storage_bucket = "materials"
+
             desc = _as_str(row.get("description"))
             title = _as_str(row.get("title")) or desc or f"Tài liệu {mid or sid}"
             difficulty = 5.5
@@ -174,6 +183,8 @@ def import_database_excel(file_path):
                     title=title,
                     description=desc,
                     file_url=file_url,
+                    storage_bucket=storage_bucket if storage_path else None,
+                    storage_path=storage_path,
                     difficulty=difficulty,
                     is_active=is_active,
                 )
@@ -182,6 +193,8 @@ def import_database_excel(file_path):
                 mat.title = title
                 mat.description = desc
                 mat.file_url = file_url
+                mat.storage_bucket = storage_bucket if storage_path else None
+                mat.storage_path = storage_path
                 mat.difficulty = difficulty
                 mat.is_active = is_active
             db.session.flush()
