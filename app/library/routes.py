@@ -246,7 +246,7 @@ def _material_data(material):
         "subject_name": getattr(subject, "name", None),
         "lesson_code": lesson_code,
         "lesson_title": lesson_title,
-        "title": dynamic_title,
+        "title": display_title,
         "description": material.description,
         "file_url": material.file_url,
         "storage_bucket": material.storage_bucket,
