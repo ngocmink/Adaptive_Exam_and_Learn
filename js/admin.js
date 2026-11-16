@@ -111,12 +111,14 @@
           if (title === null) return;
           const description = window.prompt("Mô tả", item.description || "");
           if (description === null) return;
-          const file_url = window.prompt("URL tài liệu", item.file_url || "");
+          const storage_path = window.prompt("Supabase PDF path (leave empty for an external URL)", item.storage_path || "");
+          if (storage_path === null) return;
+          const file_url = storage_path ? "" : window.prompt("File URL", item.file_url || "");
           if (file_url === null) return;
           try {
             await requestJson("/api/admin/materials/" + item.id, {
               method: "PUT",
-              body: JSON.stringify({ title, description, file_url }),
+              body: JSON.stringify({ title, description, file_url, storage_path }),
             });
             await loadManagedRecords();
             message.textContent = "Đã cập nhật tài liệu.";

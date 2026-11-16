@@ -8,6 +8,7 @@ from app.common.pagination import get_page_args, pagination_data
 from app.common.responses import error_response, success_response
 from app.extensions import db
 from app.models.schema import utcnow
+from app.common.material_storage import StorageError, create_pdf_url, legacy_pdf_url, private_response
 
 
 library_bp = Blueprint("library", __name__)
@@ -34,6 +35,27 @@ def reading_page():
     if material is None or not material.is_active:
         return error_response("Không tìm thấy tài liệu.", status=404)
     return render_template("material_reader.html", material=material, user=g.current_user)
+
+
+@library_bp.get("/api/materials/<int:material_id>/file")
+@private_response
+@login_required
+def material_file(material_id):
+    Material = get_model("Material")
+    material = db.session.get(Material, material_id)
+    # Current library policy: every signed-in role may read active content.
+    if material is None or not material.is_active or not material.subject.is_active:
+        return error_response("Material not found.", status=404)
+    try:
+        if material.storage_path:
+            target = create_pdf_url(material.storage_bucket, material.storage_path)
+        else:
+            target = legacy_pdf_url(material.file_url)
+    except StorageError as error:
+        return error_response(str(error), status=error.status)
+    except ValueError:
+        return error_response("Invalid material storage location.", status=404)
+    return redirect(target)
 
 
 @library_bp.route("/quiz", methods=["GET", "POST"])
@@ -197,6 +219,9 @@ def _material_data(material):
         "title": material.title,
         "description": material.description,
         "file_url": material.file_url,
+        "storage_bucket": material.storage_bucket,
+        "storage_path": material.storage_path,
+        "file_endpoint": url_for("library.material_file", material_id=material.id),
         "difficulty": float(material.difficulty),
         "is_active": material.is_active,
     }
