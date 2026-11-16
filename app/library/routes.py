@@ -220,21 +220,25 @@ def _material_data(material):
         .order_by(Lesson.order_num)
     ).all()
 
-    if lms:
+    if material.title and material.title.strip():
+        display_title = material.title.strip()
+    elif lms:
         if len(lms) == 1:
-            lesson_code = lms[0].code
-            lesson_title = lms[0].title
-            dynamic_title = f"{lms[0].code}: {lms[0].title}"
+            display_title = f"{lms[0].code}: {lms[0].title}"
         else:
             codes = " & ".join(l.code.split("-")[-1] if idx > 0 else l.code for idx, l in enumerate(lms))
             titles = " & ".join(l.title for l in lms)
-            lesson_code = codes
-            lesson_title = titles
-            dynamic_title = f"{codes}: {titles}"
+            display_title = f"{codes}: {titles}"
     else:
-        lesson_code = None
-        lesson_title = None
-        dynamic_title = material.title
+        display_title = "Tài liệu"
+
+    lesson_code = (
+        lms[0].code if len(lms) == 1 else " & ".join(l.code.split("-")[-1] if idx > 0 else l.code for idx, l in enumerate(lms))
+    ) if lms else None
+
+    lesson_title = (
+        lms[0].title if len(lms) == 1 else " & ".join(l.title for l in lms)
+    ) if lms else None
 
     return {
         "id": material.id,

@@ -400,7 +400,9 @@ def import_database_excel(file_path):
             lid = _as_int(row.get("lesson_id"))
             mid = _as_int(row.get("material_id"))
             sid = _as_int(row.get("subject_id"))
-            if not lid or not mid or lid not in lesson_map or mid not in material_map:
+            lesson_obj = lesson_map.get(lid) or (db.session.get(Lesson, lid) if lid else None)
+            material_obj = material_map.get(mid) or (db.session.get(Material, mid) if mid else None)
+            if not lid or not mid or not lesson_obj or not material_obj:
                 continue
             order_num = _as_int(row.get("order_num"), 1)
             lm = db.session.scalar(
@@ -411,7 +413,7 @@ def import_database_excel(file_path):
                     id=lmid,
                     lesson_id=lid,
                     material_id=mid,
-                    subject_id=sid or lesson_map[lid].subject_id,
+                    subject_id=sid or lesson_obj.subject_id,
                     order_num=order_num,
                 )
                 db.session.add(lm)
