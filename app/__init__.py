@@ -83,9 +83,9 @@ def create_app(test_config=None):
     def static_files(filename):
         allowed_roots = {"asset", "fonts", "images", "js", "vendor", "pdf"}
         parts = Path(filename).parts
-        if not parts or parts[0] not in allowed_roots:
+        if len(parts) < 2 or '..' in parts or chr(92) in filename or parts[0] not in allowed_roots:
             abort(404)
-        return send_from_directory(ROOT, filename)
+        return send_from_directory(ROOT / parts[0], '/'.join(parts[1:]))
 
     @app.get("/health")
     def health_check():

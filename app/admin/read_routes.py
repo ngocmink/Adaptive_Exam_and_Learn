@@ -64,6 +64,7 @@ def materials():
     return paginate(statement.order_by(Material.id.desc()), lambda m: {
         'id': m.id, 'subject_id': m.subject_id, 'subject_name': m.subject.name,
         'title': m.title, 'description': m.description, 'file_url': m.file_url,
+        'storage_bucket': m.storage_bucket, 'storage_path': m.storage_path,
         'difficulty': float(m.difficulty), 'is_active': m.is_active,
         'created_at': m.created_at.isoformat(),
     })

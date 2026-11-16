@@ -14,3 +14,4 @@ seed_data/*.xlsx
 legacy/*.xlsx
 .local-pg/
 *.log
+.local-backups/

@@ -15,8 +15,8 @@
   <main>
     <h1>{{ material.title }}</h1>
     {% if material.description %}<p>{{ material.description }}</p>{% endif %}
-    {% if material.file_url %}
-      <iframe src="{{ material.file_url }}" title="Tài liệu {{ material.title }}"></iframe>
+    {% if material.file_url or material.storage_path %}
+      <iframe src="{{ url_for('library.material_file', material_id=material.id) }}" referrerpolicy="no-referrer" title="Tài liệu {{ material.title }}"></iframe>
     {% else %}
       <p>Tài liệu chưa có đường dẫn file.</p>
     {% endif %}

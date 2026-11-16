@@ -8,6 +8,7 @@ from app.common.model_registry import get_model
 from app.common.responses import error_response, success_response
 from app.extensions import db
 from app.library.routes import _material_data
+from app.common.material_storage import material_source, StorageError
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -79,7 +80,7 @@ def create_material():
     try:
         Material = get_model("Material")
         title = _required_text(body, "title", 300)
-        file_url = _validate_file_url(_required_text(body, "file_url", 500))
+        source = material_source(body)
         difficulty = parse_difficulty(body.get("difficulty", 5.5))
         subject_id = int(body.get("subject_id"))
     except (ValueError, TypeError) as exc:
@@ -91,7 +92,7 @@ def create_material():
         subject_id=subject_id,
         title=title,
         description=body.get("description"),
-        file_url=file_url,
+        **source,
         difficulty=difficulty,
         is_active=True,
     )
@@ -121,8 +122,8 @@ def update_material(material_id):
     try:
         if "title" in body:
             material.title = _required_text(body, "title", 300)
-        if "file_url" in body:
-            material.file_url = _validate_file_url(_required_text(body, "file_url", 500))
+        for key, value in material_source(body, material).items():
+            setattr(material, key, value)
         if "description" in body:
             material.description = body["description"]
         if "subject_id" in body:

@@ -46,13 +46,20 @@ class Material(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id', ondelete='RESTRICT'), nullable=False, index=True)
     title = db.Column(db.String(300), nullable=False)
     description = db.Column(db.Text)
-    file_url = db.Column(db.Text, nullable=False)
+    file_url = db.Column(db.Text, nullable=True)
+    storage_bucket = db.Column(db.String(100), nullable=True)
+    storage_path = db.Column(db.Text, nullable=True)
     difficulty = db.Column(db.Numeric(), nullable=False, default=5.5, server_default='5.5')
     is_active = db.Column(db.Boolean, nullable=False, default=True, server_default=text('true'))
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, server_default=db.func.now())
     subject = db.relationship('Subject')
     __table_args__ = (
         CheckConstraint('difficulty BETWEEN 1 AND 10', name='difficulty'),
+        CheckConstraint('(storage_bucket IS NULL AND storage_path IS NULL) OR '
+            '(storage_bucket IS NOT NULL AND storage_path IS NOT NULL '
+            'AND length(trim(storage_bucket)) > 0 AND length(trim(storage_path)) > 0)', name='storage_pair'),
+        CheckConstraint('(file_url IS NOT NULL AND length(trim(file_url)) > 0) OR '
+            '(storage_bucket IS NOT NULL AND storage_path IS NOT NULL)', name='file_source'),
         UniqueConstraint('id','subject_id',name='uq_materials_id_subject'),
     )
 
