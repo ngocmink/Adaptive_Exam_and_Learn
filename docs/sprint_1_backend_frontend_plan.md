@@ -75,7 +75,6 @@ erDiagram
         string description
         string file_url
         string difficulty "easy | medium | hard"
-        int author_id FK
         boolean is_active
         datetime created_at
     }

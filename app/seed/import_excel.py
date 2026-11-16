@@ -56,7 +56,7 @@ def seed_demo(passwords):
         users[role] = user
     subject = get_or_create(Subject, {'code': 'DEMO-MATH'}, {'name': 'Demo Mathematics'})
     material = get_or_create(Material, {'subject_id': subject.id, 'title': 'Demo revision notes'},
-        {'file_url': 'pdf/GTC1.pdf', 'difficulty': 2, 'author_id': users['teacher'].id})
+        {'file_url': 'pdf/GTC1.pdf', 'difficulty': 2})
     questions = []
     for index, (a, b, difficulty) in enumerate(((1, 1, 2), (12, 8, 5.5), (25, 17, 9)), 1):
         content = f'Demo: What is {a} + {b}?'
