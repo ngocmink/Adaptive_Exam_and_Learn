@@ -445,6 +445,79 @@ def import_database_excel(file_path):
         wb.close()
 
 
+def clean_curriculum_database(clean_users=False, keep_subjects=False):
+    """Safely wipe academic, assessment and attempt data to resolve foreign key constraints."""
+    dialect = db.engine.dialect.name
+    tables = [
+        "attempt_answers",
+        "attempts",
+        "assessment_questions",
+        "assessments",
+        "question_options",
+        "question_lessons",
+        "questions",
+        "lesson_materials",
+        "learning_rules",
+        "materials",
+        "lessons",
+    ]
+    if not keep_subjects:
+        tables.append("subjects")
+    if clean_users:
+        tables.append("users")
+
+    if dialect == "postgresql":
+        table_str = ", ".join(f'"{t}"' for t in tables)
+        db.session.execute(text(f"TRUNCATE TABLE {table_str} RESTART IDENTITY CASCADE;"))
+        db.session.commit()
+    else:
+        db.session.execute(text("PRAGMA foreign_keys = OFF;"))
+        for t in tables:
+            db.session.execute(text(f'DELETE FROM "{t}";'))
+        db.session.execute(text("PRAGMA foreign_keys = ON;"))
+        db.session.commit()
+
+
+@click.command("clean-db")
+@click.option(
+    "--clean-users",
+    is_flag=True,
+    default=False,
+    help="Xóa toàn bộ người dùng trong bảng users (mặc định giữ lại tài khoản người dùng).",
+)
+@click.option(
+    "--keep-subjects",
+    is_flag=True,
+    default=False,
+    help="Giữ lại bảng môn học subjects (chỉ xóa bài học, tài liệu, câu hỏi, bài thi).",
+)
+@click.option(
+    "-y",
+    "--yes",
+    is_flag=True,
+    default=False,
+    help="Bỏ qua hỏi xác nhận (dùng cho automation script).",
+)
+@with_appcontext
+def clean_db_command(clean_users, keep_subjects, yes):
+    """Xóa sạch các bảng dữ liệu học tập/đề thi cũ để giải phóng ràng buộc foreign key."""
+    if not yes:
+        msg = "⚠️ CẢNH BÁO: Thao tác này sẽ XÓA SẠCH toàn bộ môn học, bài học, tài liệu, câu hỏi, bài thi và lịch sử làm bài!"
+        if clean_users:
+            msg += "\n⚠️ VÀ CẢ TOÀN BỘ TÀI KHOẢN NGƯỜI DÙNG TRONG BẢNG USERS!"
+        if not click.confirm(f"{msg}\nBạn có chắc chắn muốn thực hiện?"):
+            click.echo("Đã hủy thao tác.")
+            return
+
+    try:
+        click.echo("🧹 Đang dọn dẹp cơ sở dữ liệu...")
+        clean_curriculum_database(clean_users=clean_users, keep_subjects=keep_subjects)
+        click.echo("✅ Đã dọn sạch cơ sở dữ liệu thành công.")
+    except Exception as err:
+        db.session.rollback()
+        raise click.ClickException(f"Lỗi khi dọn dẹp database: {err}") from err
+
+
 @click.command("import-db")
 @click.option(
     "--file",
@@ -454,10 +527,27 @@ def import_database_excel(file_path):
     show_default=True,
     help="Path to the database Excel workbook.",
 )
+@click.option(
+    "--clean",
+    is_flag=True,
+    default=False,
+    help="Xóa sạch dữ liệu học tập/đề thi cũ trước khi import (giữ nguyên bảng users).",
+)
+@click.option(
+    "--clean-all",
+    is_flag=True,
+    default=False,
+    help="Xóa sạch toàn bộ dữ liệu bao gồm cả users trước khi import.",
+)
 @with_appcontext
-def import_db_command(file):
+def import_db_command(file, clean, clean_all):
     """Import normalized database Excel workbook into PostgreSQL models."""
     try:
+        if clean or clean_all:
+            click.echo("🧹 Đang dọn dẹp dữ liệu học tập và bài thi cũ trước khi import...")
+            clean_curriculum_database(clean_users=clean_all, keep_subjects=False)
+            click.echo("✨ Dọn dẹp hoàn tất! Bắt đầu import dữ liệu mới từ Excel...")
+
         click.echo(f"Đang đọc và import dữ liệu từ: {file}...")
         results = import_database_excel(file)
         click.echo("✅ Import thành công:")
