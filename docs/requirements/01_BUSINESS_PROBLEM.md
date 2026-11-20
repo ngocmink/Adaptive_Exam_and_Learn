@@ -1,5 +1,8 @@
 # Business problem and scope
 
+Hierarchy navigation: [Functions and use cases](05_FUNCTIONS_AND_USE_CASES.md) · [AC-to-test and reverse lookup](06_AC_TEST_TRACEABILITY.md). Structure updated 20 November 2026; prior code assessment is unchanged.
+
+
 Project: Adaptive Exam and Learn · Team 18  
 Review date: 17 November 2026  
 Code baseline: `main`, commit `3d04e11f0450894bd403e64aeb7e548b19180c1f`

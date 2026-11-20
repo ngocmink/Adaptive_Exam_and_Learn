@@ -1,5 +1,8 @@
 # Requirements to code traceability
 
+Hierarchy navigation: [Functions and use cases](05_FUNCTIONS_AND_USE_CASES.md) · [AC-to-test and reverse lookup](06_AC_TEST_TRACEABILITY.md). Structure updated 20 November 2026; prior code assessment is unchanged.
+
+
 Baseline: `main`, `3d04e11f0450894bd403e64aeb7e548b19180c1f` · 17 November 2026.
 
 Source workbook: `172880 - Agile_Project_Plan - Nhóm 18 .xlsx`, sheet **Agile Project Plan**. Row numbers below are physical worksheet rows. [Business scope](01_BUSINESS_PROBLEM.md) and [Stories](02_USER_STORIES.md) define intended behavior; [Tests](04_ACCEPTANCE_TESTS.md) define acceptance checks.
