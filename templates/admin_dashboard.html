@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="{{ url_for('static', filename='asset/admin.css') }}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
   <script>
@@ -25,7 +26,7 @@
     <!-- SB Admin 2 Gradient Sidebar -->
     <aside class="sidebar" aria-label="Điều hướng quản trị">
       <a class="sidebar-brand" href="#dashboard" data-nav="dashboard">
-        <span class="sidebar-brand-icon">🎓</span>
+        <span class="sidebar-brand-icon"><i class="fas fa-graduation-cap"></i></span>
         <span class="sidebar-brand-text">VISE ADMIN</span>
       </a>
 
@@ -34,8 +35,8 @@
       <ul class="sidebar-nav">
         <li>
           <button type="button" class="sidebar-link active" data-tab="dashboard">
-            <span class="sidebar-icon">📊</span>
-            <span class="sidebar-text">Bảng điều khiển</span>
+            <span class="sidebar-icon"><i class="fas fa-fw fa-tachometer-alt"></i></span>
+            <span class="sidebar-text">Tổng quan</span>
           </button>
         </li>
       </ul>
@@ -45,19 +46,19 @@
       <ul class="sidebar-nav">
         <li>
           <button type="button" class="sidebar-link" data-tab="subjects">
-            <span class="sidebar-icon">📚</span>
+            <span class="sidebar-icon"><i class="fas fa-fw fa-book"></i></span>
             <span class="sidebar-text">Môn học & Bài học</span>
           </button>
         </li>
         <li>
           <button type="button" class="sidebar-link" data-tab="materials">
-            <span class="sidebar-icon">📄</span>
+            <span class="sidebar-icon"><i class="fas fa-fw fa-file-alt"></i></span>
             <span class="sidebar-text">Tài liệu PDF</span>
           </button>
         </li>
         <li>
           <button type="button" class="sidebar-link" data-tab="questions">
-            <span class="sidebar-icon">❓</span>
+            <span class="sidebar-icon"><i class="fas fa-fw fa-question-circle"></i></span>
             <span class="sidebar-text">Ngân hàng câu hỏi</span>
           </button>
         </li>
@@ -68,26 +69,26 @@
       <ul class="sidebar-nav">
         <li>
           <button type="button" class="sidebar-link" data-tab="assessments">
-            <span class="sidebar-icon">📝</span>
-            <span class="sidebar-text">Đề thi & Bài tập</span>
+            <span class="sidebar-icon"><i class="fas fa-fw fa-tasks"></i></span>
+            <span class="sidebar-text">Đề thi & Bài test</span>
           </button>
         </li>
         <li>
           <button type="button" class="sidebar-link" data-tab="attempts">
-            <span class="sidebar-icon">📈</span>
+            <span class="sidebar-icon"><i class="fas fa-fw fa-chart-line"></i></span>
             <span class="sidebar-text">Lịch sử làm bài</span>
           </button>
         </li>
         <li>
           <button type="button" class="sidebar-link" data-tab="users">
-            <span class="sidebar-icon">👥</span>
+            <span class="sidebar-icon"><i class="fas fa-fw fa-users"></i></span>
             <span class="sidebar-text">Người dùng</span>
           </button>
         </li>
       </ul>
 
       <div class="sidebar-footer">
-        <button id="sidebar-collapse-btn" type="button" class="sidebar-toggle-btn" title="Thu gọn thanh bên">&lsaquo;</button>
+        <button id="sidebar-collapse-btn" type="button" class="sidebar-toggle-btn" title="Thu gọn thanh bên"><i class="fas fa-angle-left"></i></button>
         <div class="sidebar-card">
           <p>Xem giao diện kho tài liệu & đề thi như học viên.</p>
           <a href="{{ url_for('library.learner_page') }}" class="sidebar-card-btn">Mở kho học tập</a>
@@ -100,10 +101,10 @@
       <!-- Topbar -->
       <header class="topbar">
         <div class="topbar-left">
-          <button id="mobile-menu-btn" type="button" class="mobile-menu-btn" aria-label="Mở menu">☰</button>
+          <button id="mobile-menu-btn" type="button" class="mobile-menu-btn" aria-label="Mở menu"><i class="fa fa-bars"></i></button>
           <form id="topbar-search-form" class="topbar-search">
             <input id="topbar-search-input" type="search" placeholder="Tìm nhanh tài liệu, câu hỏi, đề thi, học viên..." aria-label="Tìm kiếm nhanh">
-            <button type="submit" aria-label="Tìm kiếm">🔍</button>
+            <button type="submit" aria-label="Tìm kiếm"><i class="fas fa-search"></i></button>
           </form>
         </div>
 
@@ -111,11 +112,28 @@
           <a href="{{ url_for('library.learner_page') }}" class="btn btn-outline btn-sm">Kho học tập</a>
           <span class="badge badge-primary">{{ 'Quản trị viên' if user.role == 'admin' else 'Giảng viên' }}</span>
           <div class="topbar-divider"></div>
-          <div class="user-pill">
-            <span class="user-name">{{ user.full_name }}</span>
-            <span class="user-avatar">{{ user.full_name[:1]|upper }}</span>
+          <div class="user-dropdown">
+            <button id="user-menu-btn" type="button" class="user-menu-trigger" aria-haspopup="true" aria-expanded="false">
+              <span class="user-name">{{ user.full_name }}</span>
+              <span class="user-avatar-icon"><i class="fas fa-user-circle"></i></span>
+            </button>
+            <div id="user-dropdown-menu" class="dropdown-menu" role="menu">
+              <div class="dropdown-header">
+                <strong>{{ user.full_name }}</strong>
+                <small>{{ user.email }}</small>
+              </div>
+              <div class="dropdown-divider"></div>
+              <button type="button" id="open-profile-btn" class="dropdown-item" role="menuitem">
+                <i class="fas fa-user"></i>
+                <span>Hồ sơ</span>
+              </button>
+              <div class="dropdown-divider"></div>
+              <button type="button" id="logout-button" class="dropdown-item dropdown-item-danger" role="menuitem">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+              </button>
+            </div>
           </div>
-          <button id="logout-button" type="button" class="btn btn-outline btn-sm">Đăng xuất</button>
         </div>
       </header>
 
@@ -125,8 +143,8 @@
           <div class="page-header">
             <h1 class="page-title">Dashboard</h1>
             <div class="page-actions">
-              <button id="btn-refresh-overview" type="button" class="btn btn-outline">↻ Làm mới</button>
-              <button id="btn-export-report" type="button" class="btn btn-primary">⬇ Xuất báo cáo CSV</button>
+              <button id="btn-refresh-overview" type="button" class="btn btn-outline"><i class="fas fa-sync-alt"></i> Làm mới</button>
+              <button id="btn-export-report" type="button" class="btn btn-primary"><i class="fas fa-download"></i> Xuất báo cáo CSV</button>
             </div>
           </div>
 
@@ -137,7 +155,7 @@
                 <div id="kpi-materials" class="kpi-value">--</div>
                 <div id="kpi-materials-sub" class="kpi-sub">Đang tải...</div>
               </div>
-              <div class="kpi-icon">📄</div>
+              <div class="kpi-icon"><i class="fas fa-file-alt"></i></div>
             </div>
 
             <div class="kpi-card border-success">
@@ -146,7 +164,7 @@
                 <div id="kpi-questions" class="kpi-value">--</div>
                 <div id="kpi-questions-sub" class="kpi-sub">Đang tải...</div>
               </div>
-              <div class="kpi-icon">❓</div>
+              <div class="kpi-icon"><i class="fas fa-question-circle"></i></div>
             </div>
 
             <div class="kpi-card border-info">
@@ -158,7 +176,7 @@
                 </div>
                 <div id="kpi-pass-sub" class="kpi-sub">Điểm TB: --</div>
               </div>
-              <div class="kpi-icon">🎯</div>
+              <div class="kpi-icon"><i class="fas fa-clipboard-list"></i></div>
             </div>
 
             <div class="kpi-card border-warning">
@@ -167,7 +185,7 @@
                 <div id="kpi-attempts" class="kpi-value">--</div>
                 <div id="kpi-attempts-sub" class="kpi-sub">Đang tải...</div>
               </div>
-              <div class="kpi-icon">📝</div>
+              <div class="kpi-icon"><i class="fas fa-tasks"></i></div>
             </div>
           </div>
 
@@ -347,7 +365,7 @@
           <div class="page-header">
             <h1 class="page-title">Lịch sử làm bài của học viên</h1>
             <div class="page-actions">
-              <button id="btn-export-attempts" type="button" class="btn btn-outline-primary">⬇ Xuất CSV lịch sử</button>
+              <button id="btn-export-attempts" type="button" class="btn btn-outline-primary"><i class="fas fa-download"></i> Xuất CSV lịch sử</button>
             </div>
           </div>
           <div class="card">
@@ -677,6 +695,40 @@
           <button type="submit" class="btn btn-primary">Lưu đề thi</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PROFILE -->
+  <div id="modal-profile" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-user text-primary"></i> Hồ sơ tài khoản</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Họ và tên</label>
+            <input class="form-control" value="{{ user.full_name }}" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-control" value="{{ user.email }}" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vai trò</label>
+            <input class="form-control" value="{{ 'Quản trị viên (admin)' if user.role == 'admin' else 'Giảng viên (teacher)' }}" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số điện thoại</label>
+            <input class="form-control" value="{{ user.phone or 'Chưa cập nhật' }}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="{{ url_for('library.learner_page') }}" class="btn btn-outline">Mở trang học tập</a>
+        <button type="button" class="btn btn-primary" data-close-modal>Đóng</button>
+      </div>
     </div>
   </div>
 

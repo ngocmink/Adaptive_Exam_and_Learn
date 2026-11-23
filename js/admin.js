@@ -1509,7 +1509,37 @@
   document.querySelector("#filter-users-search")?.addEventListener("input", debounce(() => loadUsers(1)));
   document.querySelector("#filter-users-role")?.addEventListener("change", () => loadUsers(1));
 
-  // ---------------- LOGOUT & INIT ----------------
+  // ---------------- USER DROPDOWN, LOGOUT & INIT ----------------
+
+  const userMenuBtn = document.querySelector("#user-menu-btn");
+  const userDropdownMenu = document.querySelector("#user-dropdown-menu");
+
+  function setUserDropdownOpen(isOpen) {
+    if (!userDropdownMenu || !userMenuBtn) return;
+    userDropdownMenu.classList.toggle("open", isOpen);
+    userMenuBtn.setAttribute("aria-expanded", String(isOpen));
+  }
+
+  userMenuBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = userDropdownMenu?.classList.contains("open");
+    setUserDropdownOpen(!isOpen);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (userDropdownMenu?.classList.contains("open") && !e.target.closest(".user-dropdown")) {
+      setUserDropdownOpen(false);
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setUserDropdownOpen(false);
+  });
+
+  document.querySelector("#open-profile-btn")?.addEventListener("click", () => {
+    setUserDropdownOpen(false);
+    openModal("#modal-profile");
+  });
 
   document.querySelector("#logout-button")?.addEventListener("click", async () => {
     try {
