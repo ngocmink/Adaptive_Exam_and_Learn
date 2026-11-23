@@ -28,11 +28,12 @@
       --bg: #f8f9fd;
       --card-bg: #ffffff;
       --border: #e2e1ef;
-      --success: #2e7d32;
-      --success-light: #e8f5e9;
+      --success: #1b8a4b;
+      --success-light: #e7f6ed;
       --danger: #d32f2f;
-      --danger-light: #ffebee;
-      --warning: #ed6c02;
+      --danger-light: #fef2f2;
+      --warning: #b45309;
+      --warning-light: #fffbeb;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -40,54 +41,73 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
-      padding-bottom: 60px;
+      padding-bottom: 70px;
     }
     header.results-header {
       background: #fff;
       border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
+      padding: 15px 24px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     }
     .header-content {
-      max-width: 900px;
+      max-width: 960px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .header-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
     }
     .back-link {
       color: var(--primary);
       text-decoration: none;
       font-weight: 600;
-      font-size: 15px;
+      font-size: 14.5px;
     }
     .back-link:hover { text-decoration: underline; }
 
     main.results-main {
-      max-width: 900px;
-      margin: 32px auto 0;
+      max-width: 960px;
+      margin: 28px auto 0;
       padding: 0 20px;
+    }
+
+    .auto-submit-banner {
+      background: var(--warning-light);
+      border: 1px solid #fde68a;
+      color: var(--warning);
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      font-weight: 600;
+      font-size: 14.5px;
     }
 
     .summary-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 36px 28px;
+      padding: 32px 26px;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 26px;
       box-shadow: 0 8px 30px rgba(36, 35, 58, 0.04);
     }
     .summary-card h1 {
       font-family: 'Roboto Slab', serif;
       font-size: clamp(22px, 3.5vw, 30px);
       color: var(--accent);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .summary-sub {
       color: var(--text-muted);
       font-size: 15px;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }
 
     .score-circle {
@@ -95,140 +115,153 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 140px;
-      height: 140px;
+      width: 142px;
+      height: 142px;
       border-radius: 50%;
-      margin: 0 auto 20px;
+      margin: 0 auto 18px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.06);
     }
     .score-circle.passed {
-      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      background: linear-gradient(135deg, #e7f6ed, #c8edd7);
       border: 3px solid var(--success);
       color: var(--success);
     }
     .score-circle.failed {
-      background: linear-gradient(135deg, #ffebee, #ffcdd2);
+      background: linear-gradient(135deg, #fef2f2, #fecaca);
       border: 3px solid var(--danger);
       color: var(--danger);
     }
-    .score-number {
-      font-size: 34px;
-      font-weight: 800;
-      line-height: 1;
-    }
-    .score-unit {
-      font-size: 13px;
-      font-weight: 600;
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .score-number { font-size: 35px; font-weight: 800; line-height: 1; }
+    .score-unit { font-size: 12.5px; font-weight: 700; margin-top: 4px; text-transform: uppercase; }
 
     .status-badge {
       display: inline-block;
       padding: 6px 18px;
       border-radius: 999px;
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }
-    .status-badge.passed {
-      background: var(--success-light);
-      color: var(--success);
-    }
-    .status-badge.failed {
-      background: var(--danger-light);
-      color: var(--danger);
-    }
+    .status-badge.passed { background: var(--success-light); color: var(--success); }
+    .status-badge.failed { background: var(--danger-light); color: var(--danger); }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
     }
     .stat-box {
       background: #fafafc;
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 16px;
+      padding: 14px;
     }
-    .stat-label {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-    .stat-value {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--accent);
-    }
+    .stat-label { font-size: 12.5px; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-value { font-size: 19px; font-weight: 700; color: var(--accent); }
 
     .actions-row {
       display: flex;
       justify-content: center;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
     }
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 12px 24px;
+      padding: 11px 22px;
       border-radius: 10px;
       font-weight: 600;
-      font-size: 15px;
+      font-size: 14.5px;
       text-decoration: none;
-      transition: all 0.2s ease;
+      transition: all 0.18s ease;
       cursor: pointer;
     }
-    .btn-primary {
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #f3f4fa; }
+
+    /* Navigator & Filter Bar */
+    .review-controls {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .review-filter-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .filter-tab {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .filter-tab.active {
       background: var(--primary);
+      border-color: var(--primary);
       color: #fff;
     }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-secondary {
-      background: #fff;
-      color: var(--text);
-      border: 1px solid var(--border);
+    .jump-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
     }
-    .btn-secondary:hover { background: #f5f5fa; }
+    .jump-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 32px;
+      padding: 0 8px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .jump-pill.correct { background: var(--success-light); color: var(--success); border-color: #bbf7d0; }
+    .jump-pill.incorrect { background: var(--danger-light); color: var(--danger); border-color: #fecaca; }
+    .jump-pill.unanswered { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
 
-    /* Review section */
-    .review-section {
-      margin-top: 40px;
-    }
     .review-title {
       font-family: 'Roboto Slab', serif;
-      font-size: 22px;
+      font-size: 21px;
       color: var(--accent);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      margin-bottom: 14px;
     }
     .review-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 24px;
+      padding: 22px 24px;
       margin-bottom: 18px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
     .review-card.correct { border-left: 5px solid var(--success); }
     .review-card.incorrect { border-left: 5px solid var(--danger); }
+    .review-card.unanswered { border-left: 5px solid #94a3b8; }
+    .review-card.hidden { display: none; }
 
     .review-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
-    .review-q-num {
-      font-weight: 700;
-      font-size: 16px;
-      color: var(--accent);
-    }
+    .review-q-num { font-weight: 700; font-size: 16px; color: var(--accent); }
     .review-status {
       font-size: 13px;
       font-weight: 700;
@@ -237,68 +270,101 @@
     }
     .review-status.correct { background: var(--success-light); color: var(--success); }
     .review-status.incorrect { background: var(--danger-light); color: var(--danger); }
+    .review-status.unanswered { background: #f1f5f9; color: #475569; }
 
-    .review-q-text {
-      font-size: 16px;
-      margin-bottom: 16px;
-      font-weight: 500;
-      line-height: 1.6;
+    .review-q-text { font-size: 16px; margin-bottom: 14px; font-weight: 500; line-height: 1.65; }
+
+    .review-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
     }
-    .review-answer-box {
-      font-size: 15px;
+    .review-opt {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       padding: 10px 14px;
-      border-radius: 8px;
-      margin-bottom: 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: #fafafc;
+      font-size: 14.5px;
     }
-    .review-user-ans {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-    }
-    .review-user-ans.correct {
-      background: var(--success-light);
-      border-color: #c8e6c9;
-      color: var(--success);
-    }
-    .review-user-ans.incorrect {
-      background: var(--danger-light);
-      border-color: #ffcdd2;
-      color: var(--danger);
-    }
-    .review-correct-ans {
-      background: var(--success-light);
-      border: 1px solid #c8e6c9;
-      color: var(--success);
-    }
-    .review-explanation {
-      margin-top: 14px;
-      padding: 12px 16px;
-      background: #fff9e6;
-      border: 1px solid #ffe8a3;
-      border-radius: 8px;
-      font-size: 14px;
-      color: #7a5800;
-    }
-    .explanation-title {
+    .review-opt-left { display: flex; align-items: center; gap: 10px; }
+    .review-opt-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e9e8f4;
+      color: var(--accent);
       font-weight: 700;
-      margin-bottom: 4px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
+    .review-opt.is-correct-opt {
+      background: var(--success-light);
+      border-color: #86efac;
+      color: #14532d;
+    }
+    .review-opt.is-correct-opt .review-opt-letter { background: var(--success); color: #fff; }
+    .review-opt.is-wrong-selected {
+      background: var(--danger-light);
+      border-color: #fca5a5;
+      color: #7f1d1d;
+    }
+    .review-opt.is-wrong-selected .review-opt-letter { background: var(--danger); color: #fff; }
+    .opt-tag {
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .review-explanation {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #78350f;
+    }
+    .explanation-title { font-weight: 700; margin-bottom: 4px; }
   </style>
 </head>
 <body>
   <header class="results-header">
     <div class="header-content">
-      <a href="{{ url_for('library.learner_page') }}" class="back-link">← Quay lại kho học tập</a>
-      <span style="font-size: 14px; color: var(--text-muted);">Học viên: <strong>{{ user.full_name }}</strong></span>
+      <div class="header-links">
+        <a href="{{ url_for('library.learner_page') }}" class="back-link">← Kho học tập</a>
+        <a href="{{ url_for('library.history_page') }}" class="back-link">Lịch sử làm bài</a>
+        {% if user.role in ['admin', 'teacher'] %}
+          <a href="{{ url_for('admin.admin_page') }}#attempts" class="back-link">Quay lại Quản trị</a>
+        {% endif %}
+      </div>
+      <span style="font-size: 14px; color: var(--text-muted);">
+        Học viên: <strong>{{ attempt_user.full_name }}</strong>
+        {% if is_staff_view %}<em>(Chế độ xem của {{ user.role }})</em>{% endif %}
+      </span>
     </div>
   </header>
 
   <main class="results-main">
+    {% if auto_submitted %}
+      <div class="auto-submit-banner">
+        ⏱️ Đã hết thời gian làm bài — hệ thống đã tự động nộp bài và chấm điểm phần bạn đã hoàn thành.
+      </div>
+    {% endif %}
+
     <section class="summary-card">
       <h1>Kết quả bài thi</h1>
-      <p class="summary-sub">{{ assessment.title }} ({{ assessment.subject.name }})</p>
+      <p class="summary-sub">{{ assessment.title }} · {{ assessment.subject.name }}</p>
 
       <div class="score-circle {{ 'passed' if is_passed else 'failed' }}">
-        <div class="score-number">{{ attempt.score|round(1) }}</div>
+        <div class="score-number">{{ (attempt.score or 0)|round(1) }}</div>
         <div class="score-unit">Điểm / 100</div>
       </div>
 
@@ -306,22 +372,26 @@
         {% if is_passed %}
           <span class="status-badge passed">🎉 ĐẠT YÊU CẦU</span>
         {% else %}
-          <span class="status-badge failed">⚠️ CHƯA ĐẠT (Điểm đạt: {{ assessment.pass_score }}%)</span>
+          <span class="status-badge failed">⚠️ CHƯA ĐẠT (Điểm sàn: {{ assessment.pass_score }}%)</span>
         {% endif %}
       </div>
 
       <div class="stats-grid">
         <div class="stat-box">
           <div class="stat-label">Số câu đúng</div>
-          <div class="stat-value">{{ attempt.correct_answers }} / {{ attempt.total_questions }}</div>
+          <div class="stat-value" style="color:var(--success)">{{ attempt.correct_answers }} / {{ attempt.total_questions }}</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Tỷ lệ chính xác</div>
+          <div class="stat-label">Sai / Chưa làm</div>
+          <div class="stat-value">{{ wrong_count }} / {{ unanswered_count }}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Thời gian làm bài</div>
           <div class="stat-value">
-            {% if attempt.total_questions > 0 %}
-              {{ ((attempt.correct_answers / attempt.total_questions) * 100)|round(1) }}%
+            {% if elapsed_seconds is not none %}
+              {{ (elapsed_seconds // 60) }}p {{ '%02d' % (elapsed_seconds % 60) }}s
             {% else %}
-              0%
+              —
             {% endif %}
           </div>
         </div>
@@ -332,21 +402,43 @@
       </div>
 
       <div class="actions-row">
-        <a href="{{ url_for('library.quiz_page', id=assessment.id) }}" class="btn btn-primary">Làm lại bài thi</a>
+        {% if not is_staff_view %}
+          <a href="{{ url_for('library.quiz_page', id=assessment.id, retake=1) }}" class="btn btn-primary">Làm lại bài thi</a>
+        {% endif %}
+        <a href="{{ url_for('library.history_page') }}" class="btn btn-secondary">Xem lịch sử làm bài</a>
         <a href="{{ url_for('library.learner_page') }}" class="btn btn-secondary">Quay lại kho học tập</a>
       </div>
     </section>
 
-    <section class="review-section">
-      <h2 class="review-title">Chi tiết bài làm</h2>
+    <section class="review-controls" aria-label="Lọc và nhảy nhanh câu hỏi">
+      <div class="review-filter-tabs">
+        <button type="button" class="filter-tab active" data-filter="all">Tất cả ({{ review_list|length }})</button>
+        <button type="button" class="filter-tab" data-filter="correct">Làm đúng ({{ attempt.correct_answers }})</button>
+        <button type="button" class="filter-tab" data-filter="incorrect">Làm sai ({{ wrong_count }})</button>
+        <button type="button" class="filter-tab" data-filter="unanswered">Chưa làm ({{ unanswered_count }})</button>
+      </div>
+      <div class="jump-pills">
+        {% for item in review_list %}
+          {% set state = 'correct' if item.is_correct else ('unanswered' if item.is_unanswered else 'incorrect') %}
+          <a href="#review-q{{ item.order_num }}" class="jump-pill {{ state }}">{{ item.order_num }}</a>
+        {% endfor %}
+      </div>
+    </section>
 
+    <section class="review-section">
+      <h2 class="review-title">Chi tiết từng câu hỏi</h2>
+
+      {% set letters = ["A", "B", "C", "D"] %}
       {% for item in review_list %}
-        <article class="review-card {{ 'correct' if item.is_correct else 'incorrect' }}">
+        {% set state = 'correct' if item.is_correct else ('unanswered' if item.is_unanswered else 'incorrect') %}
+        <article id="review-q{{ item.order_num }}" class="review-card {{ state }}" data-state="{{ state }}">
           <div class="review-card-header">
             <span class="review-q-num">Câu {{ item.order_num }}</span>
-            <span class="review-status {{ 'correct' if item.is_correct else 'incorrect' }}">
+            <span class="review-status {{ state }}">
               {% if item.is_correct %}
                 ✓ Đúng (+{{ item.points }} điểm)
+              {% elif item.is_unanswered %}
+                ○ Chưa trả lời (0 điểm)
               {% else %}
                 ✗ Sai (0 điểm)
               {% endif %}
@@ -355,24 +447,32 @@
 
           <div class="review-q-text">{{ item.question.content | math_format }}</div>
 
-          <div class="review-answer-box review-user-ans {{ 'correct' if item.is_correct else 'incorrect' }}">
-            <strong>Đáp án bạn chọn:</strong>
-            {% if item.selected_option %}
-              {{ item.selected_option.content | math_format }}
-            {% else %}
-              <em>(Chưa trả lời)</em>
-            {% endif %}
+          <div class="review-options">
+            {% for opt in item.options %}
+              {% set letter = letters[loop.index0] if loop.index0 < 4 else (loop.index|string) %}
+              {% set is_selected = (item.selected_option_id == opt.id) %}
+              {% set is_right = opt.is_correct %}
+              <div class="review-opt {% if is_right %}is-correct-opt{% elif is_selected and not is_right %}is-wrong-selected{% endif %}">
+                <div class="review-opt-left">
+                  <span class="review-opt-letter">{{ letter }}</span>
+                  <span>{{ opt.content | math_format }}</span>
+                </div>
+                <span class="opt-tag">
+                  {% if is_selected and is_right %}
+                    ✓ Bạn chọn đúng
+                  {% elif is_right %}
+                    ✓ Đáp án đúng
+                  {% elif is_selected %}
+                    ✗ Bạn đã chọn
+                  {% endif %}
+                </span>
+              </div>
+            {% endfor %}
           </div>
-
-          {% if not item.is_correct and item.correct_option %}
-            <div class="review-answer-box review-correct-ans">
-              <strong>Đáp án đúng:</strong> {{ item.correct_option.content | math_format }}
-            </div>
-          {% endif %}
 
           {% if item.explanation %}
             <div class="review-explanation">
-              <div class="explanation-title">💡 Giải thích:</div>
+              <div class="explanation-title">💡 Giải thích đáp án:</div>
               <div>{{ item.explanation | math_format }}</div>
             </div>
           {% endif %}
@@ -380,5 +480,22 @@
       {% endfor %}
     </section>
   </main>
+
+  <script>
+    (() => {
+      const tabs = document.querySelectorAll(".filter-tab");
+      const cards = document.querySelectorAll(".review-card");
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const mode = tab.dataset.filter;
+          tabs.forEach((t) => t.classList.toggle("active", t === tab));
+          cards.forEach((card) => {
+            const visible = mode === "all" || card.dataset.state === mode;
+            card.classList.toggle("hidden", !visible);
+          });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

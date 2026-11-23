@@ -4,88 +4,692 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Quản trị nội dung</title>
-  <style>
-    body{font:16px system-ui,sans-serif;margin:0;background:#f5f7fb;color:#172033}
-    header,main{max-width:1100px;margin:auto;padding:1rem}
-    header{display:flex;justify-content:space-between;align-items:center}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
-    form,section{background:white;border-radius:12px;padding:1rem}
-    label{display:block;margin:.6rem 0 .25rem}
-    input,select,textarea,button{box-sizing:border-box;width:100%;padding:.6rem;font:inherit;border:1px solid #cbd5e1;border-radius:7px}
-    button{margin-top:.7rem;background:#3157a4;color:white;border:0;cursor:pointer}
-    .options label{display:flex;gap:.5rem;align-items:center}.options input[type=radio]{width:auto}
-    #message{min-height:1.5rem;color:#174}
-  </style>
+  <title>VISE Admin — Hệ thống quản trị học tập & thi cử</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='asset/admin.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-  <header>
-    <div><strong>Quản trị nội dung</strong> — {{ user.full_name }} ({{ user.role }})</div>
-    <button id="logout-button" type="button" style="width:auto">Đăng xuất</button>
-  </header>
-  <main>
-    <p id="message" role="status"></p>
-    <section>
-      <h2>Môn học hiện có</h2>
-      <ul id="subject-list"></ul>
-    </section>
-    <section>
-      <h2>Quản lý tài liệu</h2>
-      <div id="materials-list"></div>
-    </section>
-    <section>
-      <h2>Ngân hàng câu hỏi</h2>
-      <div id="questions-list"></div>
-    </section>
-    <section>
-      <h2>Quản lý đề thi</h2>
-      <div id="assessments-list"></div>
-    </section>
-    <div class="grid">
-      <form id="material-form">
-        <h2>Thêm tài liệu</h2>
-        <label for="material-subject">Môn học</label><select id="material-subject" name="subject_id" required></select>
-        <label for="material-title">Tiêu đề</label><input id="material-title" name="title" required maxlength="300">
-        <label for="material-description">Mô tả</label><textarea id="material-description" name="description"></textarea>
-        <label for="material-url">Đường dẫn file</label><input id="material-url" name="file_url" maxlength="500">
-        <label for="material-storage-path">Supabase PDF path</label>
-        <input id="material-storage-path" name="storage_path" maxlength="1024" placeholder="GT1/notes.pdf">
-        <p>Enter either an external file URL or the path of a PDF already uploaded to the materials bucket.</p>
-        <label for="material-difficulty">Độ khó</label>
-        <input id="material-difficulty" name="difficulty" type="number" min="1" max="10" step="0.5" value="5.5" required>
-        <button type="submit">Lưu tài liệu</button>
-      </form>
-      <form id="question-form">
-        <h2>Thêm câu hỏi trắc nghiệm</h2>
-        <label for="question-subject">Môn học</label><select id="question-subject" name="subject_id" required></select>
-        <label for="question-content">Câu hỏi</label><textarea id="question-content" name="content" required></textarea>
-        <label for="question-topic">Chủ đề</label><input id="question-topic" name="topic">
-        <label for="question-difficulty">Độ khó</label>
-        <input id="question-difficulty" name="difficulty" type="number" min="1" max="10" step="0.5" value="5.5" required>
-        <div class="options">
-          {% for letter in ["A", "B", "C", "D"] %}
-          <label>
-            <input type="radio" name="correct_option" value="{{ loop.index0 }}" {% if loop.first %}checked{% endif %}>
-            {{ letter }} <input name="option_{{ loop.index0 }}" required placeholder="Nội dung đáp án {{ letter }}">
-          </label>
-          {% endfor %}
+  <div class="admin-wrapper">
+    <div id="mobile-backdrop" class="mobile-backdrop"></div>
+
+    <!-- SB Admin 2 Gradient Sidebar -->
+    <aside class="sidebar" aria-label="Điều hướng quản trị">
+      <a class="sidebar-brand" href="#dashboard" data-nav="dashboard">
+        <span class="sidebar-brand-icon">🎓</span>
+        <span class="sidebar-brand-text">VISE ADMIN</span>
+      </a>
+
+      <hr class="sidebar-divider">
+      <div class="sidebar-heading">Tổng quan</div>
+      <ul class="sidebar-nav">
+        <li>
+          <button type="button" class="sidebar-link active" data-tab="dashboard">
+            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-text">Bảng điều khiển</span>
+          </button>
+        </li>
+      </ul>
+
+      <hr class="sidebar-divider">
+      <div class="sidebar-heading">Quản lý nội dung</div>
+      <ul class="sidebar-nav">
+        <li>
+          <button type="button" class="sidebar-link" data-tab="subjects">
+            <span class="sidebar-icon">📚</span>
+            <span class="sidebar-text">Môn học & Bài học</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidebar-link" data-tab="materials">
+            <span class="sidebar-icon">📄</span>
+            <span class="sidebar-text">Tài liệu PDF</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidebar-link" data-tab="questions">
+            <span class="sidebar-icon">❓</span>
+            <span class="sidebar-text">Ngân hàng câu hỏi</span>
+          </button>
+        </li>
+      </ul>
+
+      <hr class="sidebar-divider">
+      <div class="sidebar-heading">Đánh giá & Học viên</div>
+      <ul class="sidebar-nav">
+        <li>
+          <button type="button" class="sidebar-link" data-tab="assessments">
+            <span class="sidebar-icon">📝</span>
+            <span class="sidebar-text">Đề thi & Bài tập</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidebar-link" data-tab="attempts">
+            <span class="sidebar-icon">📈</span>
+            <span class="sidebar-text">Lịch sử làm bài</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="sidebar-link" data-tab="users">
+            <span class="sidebar-icon">👥</span>
+            <span class="sidebar-text">Người dùng</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <button id="sidebar-collapse-btn" type="button" class="sidebar-toggle-btn" title="Thu gọn thanh bên">&lsaquo;</button>
+        <div class="sidebar-card">
+          <p>Xem giao diện kho tài liệu & đề thi như học viên.</p>
+          <a href="{{ url_for('library.learner_page') }}" class="sidebar-card-btn">Mở kho học tập</a>
         </div>
-        <label for="question-explanation">Giải thích</label><textarea id="question-explanation" name="explanation"></textarea>
-        <button type="submit">Lưu câu hỏi</button>
-      </form>
-      <form id="assessment-form">
-        <h2>Tạo đề thi</h2>
-        <label for="assessment-subject">Môn học</label><select id="assessment-subject" name="subject_id" required></select>
-        <label for="assessment-title">Tên đề</label><input id="assessment-title" name="title" required maxlength="300">
-        <label for="assessment-type">Loại</label>
-        <select id="assessment-type" name="type"><option>quiz</option><option>exam</option><option>practice</option></select>
-        <label for="assessment-duration">Thời lượng (phút)</label><input id="assessment-duration" name="duration_minutes" type="number" min="1" value="30" required>
-        <label for="assessment-pass">Điểm đạt</label><input id="assessment-pass" name="pass_score" type="number" min="0" value="50" required>
-        <label for="assessment-questions">ID câu hỏi, phân cách bằng dấu phẩy</label><input id="assessment-questions" name="question_ids" placeholder="1, 2, 3">
-        <button type="submit">Tạo đề</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="content-wrapper">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="mobile-menu-btn" type="button" class="mobile-menu-btn" aria-label="Mở menu">☰</button>
+          <form id="topbar-search-form" class="topbar-search">
+            <input id="topbar-search-input" type="search" placeholder="Tìm nhanh tài liệu, câu hỏi, đề thi, học viên..." aria-label="Tìm kiếm nhanh">
+            <button type="submit" aria-label="Tìm kiếm">🔍</button>
+          </form>
+        </div>
+
+        <div class="topbar-right">
+          <a href="{{ url_for('library.learner_page') }}" class="btn btn-outline btn-sm">Kho học tập</a>
+          <span class="badge badge-primary">{{ 'Quản trị viên' if user.role == 'admin' else 'Giảng viên' }}</span>
+          <div class="topbar-divider"></div>
+          <div class="user-pill">
+            <span class="user-name">{{ user.full_name }}</span>
+            <span class="user-avatar">{{ user.full_name[:1]|upper }}</span>
+          </div>
+          <button id="logout-button" type="button" class="btn btn-outline btn-sm">Đăng xuất</button>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <!-- VIEW 1: DASHBOARD -->
+        <section id="view-dashboard" class="view-section active">
+          <div class="page-header">
+            <h1 class="page-title">Dashboard</h1>
+            <div class="page-actions">
+              <button id="btn-refresh-overview" type="button" class="btn btn-outline">↻ Làm mới</button>
+              <button id="btn-export-report" type="button" class="btn btn-primary">⬇ Xuất báo cáo CSV</button>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card border-primary">
+              <div>
+                <div class="kpi-label text-primary">Tài liệu & Bài học</div>
+                <div id="kpi-materials" class="kpi-value">--</div>
+                <div id="kpi-materials-sub" class="kpi-sub">Đang tải...</div>
+              </div>
+              <div class="kpi-icon">📄</div>
+            </div>
+
+            <div class="kpi-card border-success">
+              <div>
+                <div class="kpi-label text-success">Ngân hàng câu hỏi</div>
+                <div id="kpi-questions" class="kpi-value">--</div>
+                <div id="kpi-questions-sub" class="kpi-sub">Đang tải...</div>
+              </div>
+              <div class="kpi-icon">❓</div>
+            </div>
+
+            <div class="kpi-card border-info">
+              <div style="flex:1">
+                <div class="kpi-label text-info">Tỷ lệ đạt bài thi</div>
+                <div class="kpi-progress-wrap">
+                  <div id="kpi-pass-rate" class="kpi-value">--%</div>
+                  <div class="kpi-progress"><div id="kpi-pass-bar" class="kpi-progress-bar" style="width:0%"></div></div>
+                </div>
+                <div id="kpi-pass-sub" class="kpi-sub">Điểm TB: --</div>
+              </div>
+              <div class="kpi-icon">🎯</div>
+            </div>
+
+            <div class="kpi-card border-warning">
+              <div>
+                <div class="kpi-label text-warning">Lượt làm bài & Đề thi</div>
+                <div id="kpi-attempts" class="kpi-value">--</div>
+                <div id="kpi-attempts-sub" class="kpi-sub">Đang tải...</div>
+              </div>
+              <div class="kpi-icon">📝</div>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Lượt làm bài 7 ngày gần nhất</h2>
+                <span class="badge badge-primary">Theo ngày</span>
+              </div>
+              <div class="card-body">
+                <div class="chart-container"><canvas id="chart-attempts-line"></canvas></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Phân bố kết quả</h2>
+                <span class="badge badge-info">Tỷ trọng</span>
+              </div>
+              <div class="card-body">
+                <div class="chart-container"><canvas id="chart-results-donut"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="two-col-grid">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Phân bổ nội dung theo môn</h2>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-jump="subjects">Quản lý môn</button>
+              </div>
+              <div class="card-body">
+                <div id="overview-subject-breakdown" class="table-responsive">Đang tải...</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Lượt làm bài gần đây</h2>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-jump="attempts">Xem tất cả</button>
+              </div>
+              <div class="card-body">
+                <div id="overview-recent-attempts" class="table-responsive">Đang tải...</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 2: SUBJECTS & LESSONS -->
+        <section id="view-subjects" class="view-section">
+          <div class="page-header">
+            <h1 class="page-title">Môn học & Bài học</h1>
+            <div class="page-actions">
+              <div class="sub-tabs">
+                <button type="button" class="sub-tab active" data-subtab="subjects">Môn học</button>
+                <button type="button" class="sub-tab" data-subtab="lessons">Bài học / Chương</button>
+              </div>
+              <button id="btn-add-subject" type="button" class="btn btn-primary">+ Thêm môn học</button>
+              <button id="btn-add-lesson" type="button" class="btn btn-success hidden">+ Thêm bài học</button>
+            </div>
+          </div>
+
+          <div id="subpanel-subjects" class="card">
+            <div class="card-header"><h2 class="card-title">Danh sách môn học</h2></div>
+            <div class="card-body">
+              <div class="filter-bar">
+                <input id="filter-subjects-search" type="search" placeholder="Tìm theo mã hoặc tên môn học...">
+                <label class="filter-checkbox">
+                  <input id="filter-subjects-inactive" type="checkbox" checked> Hiện cả môn đã ẩn
+                </label>
+              </div>
+              <div id="subjects-table-wrap" class="table-responsive"></div>
+              <div id="subjects-pagination" class="pagination-bar"></div>
+            </div>
+          </div>
+
+          <div id="subpanel-lessons" class="card hidden">
+            <div class="card-header"><h2 class="card-title">Danh sách bài học / chuyên đề</h2></div>
+            <div class="card-body">
+              <div class="filter-bar">
+                <input id="filter-lessons-search" type="search" placeholder="Tìm theo mã hoặc tên bài học...">
+                <select id="filter-lessons-subject"><option value="">Tất cả môn học</option></select>
+                <select id="filter-lessons-status">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="published">Đã xuất bản</option>
+                  <option value="draft">Bản nháp</option>
+                  <option value="archived">Đã lưu trữ</option>
+                </select>
+              </div>
+              <div id="lessons-table-wrap" class="table-responsive"></div>
+              <div id="lessons-pagination" class="pagination-bar"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 3: MATERIALS -->
+        <section id="view-materials" class="view-section">
+          <div class="page-header">
+            <h1 class="page-title">Quản lý Tài liệu PDF</h1>
+            <div class="page-actions">
+              <button id="btn-add-material" type="button" class="btn btn-primary">+ Thêm tài liệu</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Danh sách tài liệu</h2></div>
+            <div class="card-body">
+              <div class="filter-bar">
+                <input id="filter-materials-search" type="search" placeholder="Tìm tiêu đề tài liệu...">
+                <select id="filter-materials-subject"><option value="">Tất cả môn học</option></select>
+                <label class="filter-checkbox">
+                  <input id="filter-materials-inactive" type="checkbox" checked> Hiện cả tài liệu đã ẩn
+                </label>
+              </div>
+              <div id="materials-table-wrap" class="table-responsive"></div>
+              <div id="materials-pagination" class="pagination-bar"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 4: QUESTIONS -->
+        <section id="view-questions" class="view-section">
+          <div class="page-header">
+            <h1 class="page-title">Ngân hàng Câu hỏi</h1>
+            <div class="page-actions">
+              <button id="btn-add-question" type="button" class="btn btn-primary">+ Thêm câu hỏi</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Danh sách câu hỏi trắc nghiệm</h2></div>
+            <div class="card-body">
+              <div class="filter-bar">
+                <input id="filter-questions-search" type="search" placeholder="Tìm nội dung câu hỏi...">
+                <select id="filter-questions-subject"><option value="">Tất cả môn học</option></select>
+                <input id="filter-questions-difficulty" type="number" min="1" max="10" step="0.5" placeholder="Độ khó (1-10)" style="width:140px">
+                <label class="filter-checkbox">
+                  <input id="filter-questions-inactive" type="checkbox" checked> Hiện cả câu đã ẩn
+                </label>
+              </div>
+              <div id="questions-table-wrap" class="table-responsive"></div>
+              <div id="questions-pagination" class="pagination-bar"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 5: ASSESSMENTS -->
+        <section id="view-assessments" class="view-section">
+          <div class="page-header">
+            <h1 class="page-title">Quản lý Đề thi & Bài tập</h1>
+            <div class="page-actions">
+              <button id="btn-add-assessment" type="button" class="btn btn-primary">+ Tạo đề thi mới</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Danh sách đề ôn tập & kiểm tra</h2></div>
+            <div class="card-body">
+              <div class="filter-bar">
+                <input id="filter-assessments-search" type="search" placeholder="Tìm tên đề thi...">
+                <select id="filter-assessments-subject"><option value="">Tất cả môn học</option></select>
+                <select id="filter-assessments-type">
+                  <option value="">Tất cả loại</option>
+                  <option value="quiz">Quiz</option>
+                  <option value="exam">Exam (Kiểm tra)</option>
+                  <option value="practice">Practice (Ôn tập)</option>
+                </select>
+                <label class="filter-checkbox">
+                  <input id="filter-assessments-inactive" type="checkbox" checked> Hiện cả đề đã ẩn
+                </label>
+              </div>
+              <div id="assessments-table-wrap" class="table-responsive"></div>
+              <div id="assessments-pagination" class="pagination-bar"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 6: ATTEMPTS -->
+        <section id="view-attempts" class="view-section">
+          <div class="page-header">
+            <h1 class="page-title">Lịch sử làm bài của học viên</h1>
+            <div class="page-actions">
+              <button id="btn-export-attempts" type="button" class="btn btn-outline-primary">⬇ Xuất CSV lịch sử</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Theo dõi kết quả & bài làm</h2></div>
+            <div class="card-body">
+              <div class="filter-bar">
+                <input id="filter-attempts-search" type="search" placeholder="Tìm tên học viên, email hoặc tên đề...">
+                <select id="filter-attempts-subject"><option value="">Tất cả môn học</option></select>
+                <select id="filter-attempts-status">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="completed">Đã nộp bài</option>
+                  <option value="in_progress">Đang làm bài</option>
+                  <option value="abandoned">Đã hủy</option>
+                </select>
+              </div>
+              <div id="attempts-table-wrap" class="table-responsive"></div>
+              <div id="attempts-pagination" class="pagination-bar"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 7: USERS -->
+        <section id="view-users" class="view-section">
+          <div class="page-header">
+            <h1 class="page-title">Quản lý Người dùng</h1>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Danh sách tài khoản hệ thống</h2></div>
+            <div class="card-body">
+              <div class="filter-bar">
+                <input id="filter-users-search" type="search" placeholder="Tìm theo họ tên hoặc email...">
+                <select id="filter-users-role">
+                  <option value="">Tất cả vai trò</option>
+                  <option value="student">Học viên (student)</option>
+                  <option value="teacher">Giảng viên (teacher)</option>
+                  <option value="admin">Quản trị viên (admin)</option>
+                </select>
+              </div>
+              <div id="users-table-wrap" class="table-responsive"></div>
+              <div id="users-pagination" class="pagination-bar"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL: SUBJECT -->
+  <div id="modal-subject" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-subject-title" class="modal-title">Thêm môn học</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="form-subject">
+        <input type="hidden" name="id">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="subj-code">Mã môn học *</label>
+              <input id="subj-code" name="code" class="form-control" required maxlength="100" placeholder="VD: MI1111">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="subj-name">Tên môn học *</label>
+              <input id="subj-name" name="name" class="form-control" required maxlength="200" placeholder="VD: Giải tích 1">
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="subj-desc">Mô tả</label>
+              <textarea id="subj-desc" name="description" class="form-control" placeholder="Mô tả tổng quan môn học..."></textarea>
+            </div>
+            <div class="form-group full">
+              <label class="filter-checkbox"><input id="subj-active" name="is_active" type="checkbox" checked> Đang hiển thị cho học viên</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu môn học</button>
+        </div>
       </form>
     </div>
-  </main>
+  </div>
+
+  <!-- MODAL: LESSON -->
+  <div id="modal-lesson" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-lesson-title" class="modal-title">Thêm bài học</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="form-lesson">
+        <input type="hidden" name="id">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="lesson-subject">Môn học *</label>
+              <select id="lesson-subject" name="subject_id" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lesson-order">Thứ tự *</label>
+              <input id="lesson-order" name="order_num" type="number" min="1" value="1" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lesson-code">Mã bài học *</label>
+              <input id="lesson-code" name="code" class="form-control" required maxlength="100" placeholder="VD: GT1-C01">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lesson-status">Trạng thái</label>
+              <select id="lesson-status" name="status" class="form-control">
+                <option value="published">Đã xuất bản (published)</option>
+                <option value="draft">Bản nháp (draft)</option>
+                <option value="archived">Lưu trữ (archived)</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="lesson-title">Tiêu đề bài học *</label>
+              <input id="lesson-title" name="title" class="form-control" required maxlength="300">
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="lesson-objectives">Mục tiêu bài học</label>
+              <textarea id="lesson-objectives" name="objectives" class="form-control"></textarea>
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="lesson-content">Tóm tắt nội dung</label>
+              <textarea id="lesson-content" name="content" class="form-control"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu bài học</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: MATERIAL -->
+  <div id="modal-material" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-material-title" class="modal-title">Thêm tài liệu</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="form-material">
+        <input type="hidden" name="id">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="mat-subject">Môn học *</label>
+              <select id="mat-subject" name="subject_id" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mat-difficulty">Độ khó (1 - 10) *</label>
+              <input id="mat-difficulty" name="difficulty" type="number" min="1" max="10" step="0.5" value="5.5" class="form-control" required>
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="mat-title">Tiêu đề tài liệu *</label>
+              <input id="mat-title" name="title" class="form-control" required maxlength="300">
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="mat-desc">Mô tả</label>
+              <textarea id="mat-desc" name="description" class="form-control"></textarea>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Nguồn file PDF *</label>
+              <div class="sub-tabs" style="margin-bottom:0.5rem">
+                <button type="button" class="sub-tab active" data-mat-source="storage">Supabase PDF Path</button>
+                <button type="button" class="sub-tab" data-mat-source="url">URL ngoài / Static</button>
+              </div>
+              <div id="mat-source-storage">
+                <input id="mat-storage-path" name="storage_path" class="form-control" maxlength="1024" placeholder="VD: GT1/gt1_c01-02.pdf">
+                <small class="text-muted">Đường dẫn tương đối file PDF đã upload lên Supabase bucket <code>materials</code>.</small>
+              </div>
+              <div id="mat-source-url" class="hidden">
+                <input id="mat-file-url" name="file_url" class="form-control" maxlength="500" placeholder="VD: https://... hoặc pdf/GTC1.pdf">
+                <small class="text-muted">Link https:// hoặc đường dẫn bắt đầu bằng <code>pdf/...</code>.</small>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Gán vào bài học / chương</label>
+              <div id="mat-lessons-checklist" class="lesson-checklist"></div>
+            </div>
+            <div class="form-group full">
+              <label class="filter-checkbox"><input id="mat-active" name="is_active" type="checkbox" checked> Đang hiển thị</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu tài liệu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: QUESTION -->
+  <div id="modal-question" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-question-title" class="modal-title">Thêm câu hỏi trắc nghiệm</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="form-question">
+        <input type="hidden" name="id">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="q-subject">Môn học *</label>
+              <select id="q-subject" name="subject_id" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="q-difficulty">Độ khó (1 - 10) *</label>
+              <input id="q-difficulty" name="difficulty" type="number" min="1" max="10" step="0.5" value="5.5" class="form-control" required>
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="q-topic">Chủ đề (Topic)</label>
+              <input id="q-topic" name="topic" class="form-control" maxlength="200" placeholder="VD: Giới hạn hàm số">
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="q-content">Nội dung câu hỏi (hỗ trợ LaTeX $...$) *</label>
+              <textarea id="q-content" name="content" class="form-control" required placeholder="Nhập nội dung câu hỏi..."></textarea>
+              <div id="q-math-preview" class="math-preview-box">Xem trước công thức toán học...</div>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">4 Đáp án (chọn 1 đáp án đúng) *</label>
+              {% for letter in ["A", "B", "C", "D"] %}
+              <div class="option-row">
+                <input type="radio" name="correct_option" value="{{ loop.index0 }}" {% if loop.first %}checked{% endif %} aria-label="Đáp án đúng {{ letter }}">
+                <span class="option-letter">{{ letter }}</span>
+                <input name="option_{{ loop.index0 }}" class="form-control" required placeholder="Nội dung đáp án {{ letter }}">
+              </div>
+              {% endfor %}
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="q-explanation">Giải thích đáp án</label>
+              <textarea id="q-explanation" name="explanation" class="form-control" placeholder="Lời giải chi tiết giúp học viên xem lại..."></textarea>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Gán vào bài học</label>
+              <div id="q-lessons-checklist" class="lesson-checklist"></div>
+            </div>
+            <div class="form-group full">
+              <label class="filter-checkbox"><input id="q-active" name="is_active" type="checkbox" checked> Kích hoạt câu hỏi</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu câu hỏi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ASSESSMENT WITH VISUAL QUESTION PICKER -->
+  <div id="modal-assessment" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-assessment-title" class="modal-title">Tạo đề thi / bài tập</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="form-assessment">
+        <input type="hidden" name="id">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="assess-subject">Môn học *</label>
+              <select id="assess-subject" name="subject_id" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="assess-type">Loại đề *</label>
+              <select id="assess-type" name="type" class="form-control">
+                <option value="quiz">Quiz (Kiểm tra ngắn)</option>
+                <option value="exam">Exam (Thi chính thức)</option>
+                <option value="practice">Practice (Ôn tập)</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="assess-title">Tên đề thi *</label>
+              <input id="assess-title" name="title" class="form-control" required maxlength="300">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="assess-duration">Thời lượng (phút) *</label>
+              <input id="assess-duration" name="duration_minutes" type="number" min="1" value="30" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="assess-pass">Điểm đạt (%) *</label>
+              <input id="assess-pass" name="pass_score" type="number" min="0" max="100" value="50" class="form-control" required>
+            </div>
+            <div class="form-group full">
+              <label class="form-label" for="assess-desc">Mô tả</label>
+              <textarea id="assess-desc" name="description" class="form-control"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">Chọn & Sắp xếp câu hỏi cho đề thi</label>
+            <div class="picker-grid">
+              <div class="picker-panel">
+                <div class="picker-panel-header">
+                  <span>Ngân hàng câu hỏi</span>
+                  <button id="picker-load-btn" type="button" class="btn btn-sm btn-outline-primary">↻ Tải</button>
+                </div>
+                <div class="picker-panel-tools">
+                  <input id="picker-search" type="search" class="form-control" placeholder="Tìm câu hỏi...">
+                  <select id="picker-subject-filter" class="form-control" style="max-width:140px"><option value="">Theo môn</option></select>
+                </div>
+                <div id="picker-available-list" class="picker-list"></div>
+              </div>
+
+              <div class="picker-panel">
+                <div class="picker-panel-header">
+                  <span>Đã chọn: <strong id="picker-selected-count">0</strong> câu</span>
+                  <button id="picker-clear-btn" type="button" class="btn btn-sm btn-outline">Xóa hết</button>
+                </div>
+                <div id="picker-selected-list" class="picker-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full" style="margin-top:0.5rem">
+            <label class="filter-checkbox"><input id="assess-active" name="is_active" type="checkbox" checked> Công khai đề thi cho học viên</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu đề thi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+  <script>
+    window.adminConfig = {
+      userId: {{ user.id|tojson }},
+      userRole: {{ user.role|tojson }},
+      userName: {{ user.full_name|tojson }}
+    };
+  </script>
   <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
 </body>
 </html>

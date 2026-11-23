@@ -26,12 +26,15 @@
       --accent: #26264a;
       --text: #24233a;
       --text-muted: #55536f;
-      --bg: #f8f9fd;
+      --bg: #f6f7fc;
       --card-bg: #ffffff;
       --border: #e2e1ef;
-      --success: #2e7d32;
+      --success: #1b8a4b;
+      --success-bg: #e7f6ed;
       --danger: #d32f2f;
       --warning: #ed6c02;
+      --flag: #f59e0b;
+      --flag-bg: #fef3c7;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -39,8 +42,9 @@
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
-      padding-bottom: 90px;
+      padding-bottom: 50px;
     }
+
     header.quiz-header {
       position: sticky;
       top: 0;
@@ -48,16 +52,22 @@
       background: #fff;
       border-bottom: 1px solid var(--border);
       box-shadow: 0 4px 18px rgba(36, 35, 58, 0.05);
-      padding: 14px 24px;
+      padding: 12px 24px;
     }
     .header-content {
-      max-width: 1000px;
+      max-width: 1220px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       flex-wrap: wrap;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
     }
     .back-link {
       display: inline-flex;
@@ -66,66 +76,131 @@
       color: var(--primary);
       text-decoration: none;
       font-weight: 600;
-      font-size: 15px;
-      transition: color 0.2s;
+      font-size: 14px;
+      white-space: nowrap;
     }
     .back-link:hover { color: var(--primary-hover); text-decoration: underline; }
+    .header-title {
+      font-family: 'Roboto Slab', serif;
+      font-size: 17px;
+      color: var(--accent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 360px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .autosave-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .autosave-pill.saving { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .autosave-pill.saved { background: var(--success-bg); color: var(--success); border-color: #bbf7d0; }
+    .autosave-pill.error { background: #fef2f2; color: var(--danger); border-color: #fecaca; }
+
+    .view-mode-switch {
+      display: inline-flex;
+      background: #eef0f7;
+      padding: 3px;
+      border-radius: 10px;
+      gap: 3px;
+    }
+    .mode-btn {
+      border: 0;
+      background: transparent;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
     .timer-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background: #fff3e0;
-      color: #b76e00;
-      border: 1px solid #ffe0b2;
-      padding: 6px 14px;
+      gap: 7px;
+      background: #fff7ed;
+      color: #b45309;
+      border: 1px solid #fed7aa;
+      padding: 6px 15px;
       border-radius: 999px;
       font-weight: 700;
       font-size: 15px;
       letter-spacing: 0.5px;
+      font-variant-numeric: tabular-nums;
     }
     .timer-badge.warning {
-      background: #ffebee;
+      background: #fffbeb;
+      color: #c2410c;
+      border-color: #fdba74;
+    }
+    .timer-badge.danger {
+      background: #fef2f2;
       color: var(--danger);
-      border-color: #ffcdd2;
-      animation: pulse 1s infinite alternate;
+      border-color: #fecaca;
+      animation: pulse 0.9s infinite alternate;
     }
-    @keyframes pulse { from { opacity: 1; } to { opacity: 0.6; } }
+    @keyframes pulse { from { opacity: 1; } to { opacity: 0.62; } }
 
-    main.quiz-main {
-      max-width: 1000px;
-      margin: 28px auto 0;
+    main.quiz-workspace {
+      max-width: 1220px;
+      margin: 24px auto 0;
       padding: 0 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 24px;
+      align-items: start;
     }
+
     .assessment-intro {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.03);
     }
     .assessment-intro h1 {
       font-family: 'Roboto Slab', serif;
-      font-size: clamp(24px, 4vw, 32px);
+      font-size: clamp(21px, 3vw, 27px);
       color: var(--accent);
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
     .assessment-intro p.desc {
       color: var(--text-muted);
-      font-size: 15px;
-      margin-bottom: 16px;
+      font-size: 14px;
+      margin-bottom: 12px;
     }
     .badges-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
     .badge {
       display: inline-flex;
       align-items: center;
-      padding: 6px 12px;
+      padding: 4px 11px;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       background: var(--primary-light);
       color: var(--primary);
@@ -135,22 +210,22 @@
     .question-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 12px rgba(36, 35, 58, 0.03);
-      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(36, 35, 58, 0.04);
     }
-    .question-card:hover {
-      border-color: #cbd5e1;
-    }
+    .question-card.hidden { display: none; }
+
     .question-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       gap: 10px;
       flex-wrap: wrap;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f0f8;
     }
     .q-number {
       font-size: 17px;
@@ -163,19 +238,41 @@
       display: flex;
       gap: 10px;
       align-items: center;
+      flex-wrap: wrap;
     }
     .q-topic {
       background: #f1f5f9;
-      padding: 3px 8px;
+      padding: 3px 9px;
       border-radius: 6px;
-      font-weight: 500;
+      font-weight: 600;
     }
+    .flag-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .flag-btn:hover { border-color: var(--flag); color: #b45309; }
+    .flag-btn.flagged {
+      background: var(--flag-bg);
+      border-color: var(--flag);
+      color: #92400e;
+    }
+
     .question-text {
-      font-size: 16px;
+      font-size: 16.5px;
       font-weight: 500;
       color: #1e293b;
       margin-bottom: 20px;
-      line-height: 1.7;
+      line-height: 1.75;
     }
 
     .options-grid {
@@ -186,27 +283,27 @@
     .option-label {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 18px;
+      gap: 14px;
+      padding: 13px 18px;
       border: 1.5px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       background: #fafafc;
-      transition: all 0.2s ease;
-      font-size: 15px;
+      transition: all 0.18s ease;
+      font-size: 15.5px;
       user-select: none;
     }
     .option-label:hover {
       border-color: var(--primary);
-      background: #f8f8fd;
+      background: #f6f6fe;
     }
     .option-label input[type="radio"] {
       display: none;
     }
     .opt-letter {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
       border-radius: 50%;
       background: #e9e8f4;
       color: var(--accent);
@@ -215,211 +312,401 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
+      transition: all 0.18s ease;
     }
-    .opt-content {
-      flex: 1;
-      color: var(--text);
-    }
+    .opt-content { flex: 1; color: var(--text); }
     .option-label.selected {
       border-color: var(--primary);
       background: var(--primary-light);
+      box-shadow: 0 2px 10px rgba(77, 76, 162, 0.12);
     }
     .option-label.selected .opt-letter {
       background: var(--primary);
       color: #fff;
     }
 
-    /* Fixed bottom bar */
-    .bottom-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #fff;
-      border-top: 1px solid var(--border);
-      padding: 14px 24px;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-      z-index: 99;
-    }
-    .bottom-content {
-      max-width: 1000px;
-      margin: 0 auto;
+    .card-nav-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid #f1f0f8;
+      gap: 10px;
+      flex-wrap: wrap;
     }
-    .progress-text {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-muted);
+    .card-nav-buttons {
+      display: flex;
+      gap: 10px;
     }
-    .progress-highlight {
-      color: var(--primary);
-      font-weight: 700;
-    }
-    .btn-submit {
-      background: var(--primary);
-      color: #fff;
-      border: none;
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
       border-radius: 10px;
-      padding: 12px 28px;
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 14.5px;
+      font-weight: 600;
       font-family: inherit;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
+      border: 1px solid transparent;
+      transition: all 0.16s ease;
     }
-    .btn-submit:hover {
-      background: var(--primary-hover);
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-outline { background: #fff; color: var(--text); border-color: var(--border); }
+    .btn-outline:hover:not(:disabled) { background: #f3f4fa; border-color: #c7c5df; }
+    .btn-ghost { background: transparent; color: var(--text-muted); padding: 8px 12px; font-size: 13.5px; }
+    .btn-ghost:hover:not(:disabled) { color: var(--danger); background: #fef2f2; }
+
+    /* Sticky Right Sidebar */
+    aside.quiz-sidebar {
+      position: sticky;
+      top: 82px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 6px 22px rgba(36, 35, 58, 0.05);
     }
-    .btn-submit:active {
-      transform: scale(0.98);
+    .sidebar-title {
+      font-family: 'Roboto Slab', serif;
+      font-size: 16px;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #ecebf6;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #6c6be0);
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+    .nav-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+      max-height: 290px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+    .nav-pill {
+      position: relative;
+      height: 38px;
+      border-radius: 9px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .nav-pill:hover { border-color: var(--primary); }
+    .nav-pill.answered {
+      background: var(--success-bg);
+      border-color: #86efac;
+      color: var(--success);
+    }
+    .nav-pill.current {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2.5px rgba(77, 76, 162, 0.28);
+    }
+    .nav-pill.flagged::after {
+      content: "🚩";
+      position: absolute;
+      top: -6px;
+      right: -5px;
+      font-size: 10px;
+    }
+
+    .btn-submit-full {
+      width: 100%;
+      padding: 13px;
+      font-size: 15.5px;
+      font-weight: 700;
+      border-radius: 11px;
+    }
+    .shortcut-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Pre-submit modal & Timeout overlay */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 24, 48, 0.55);
+      backdrop-filter: blur(3px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      width: 100%;
+      max-width: 520px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 26px;
+      box-shadow: 0 20px 55px rgba(0, 0, 0, 0.25);
+    }
+    .modal-card h2 {
+      font-family: 'Roboto Slab', serif;
+      font-size: 21px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .modal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 16px 0;
+    }
+    .modal-stat {
+      background: #f8f9fd;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+    .modal-stat strong { display: block; font-size: 20px; color: var(--accent); }
+    .modal-stat span { font-size: 12px; color: var(--text-muted); }
+    .jump-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .jump-chip {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 12.5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .jump-chip:hover { background: var(--primary-light); }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    @media (max-width: 920px) {
+      main.quiz-workspace {
+        grid-template-columns: 1fr;
+      }
+      aside.quiz-sidebar {
+        position: static;
+      }
+      .header-title {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
   <header class="quiz-header">
     <div class="header-content">
-      <a href="{{ url_for('library.learner_page') }}" class="back-link">← Quay lại kho học tập</a>
-      <div id="quiz-timer" class="timer-badge" role="timer" aria-live="polite">
-        ⏱️ <span id="time-left">--:--</span>
+      <div class="header-left">
+        <a href="{{ url_for('library.learner_page') }}" class="back-link">← Kho học tập</a>
+        <span class="header-title">{{ assessment.title }}</span>
+      </div>
+      <div class="header-right">
+        <span id="autosave-status" class="autosave-pill saved">✓ Đã lưu tự động</span>
+        <div class="view-mode-switch" role="group" aria-label="Chế độ xem câu hỏi">
+          <button type="button" class="mode-btn active" data-view-mode="single">Từng câu</button>
+          <button type="button" class="mode-btn" data-view-mode="all">Tất cả câu</button>
+        </div>
+        <div id="quiz-timer" class="timer-badge" role="timer" aria-live="polite">
+          ⏱️ <span id="time-left">--:--</span>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="quiz-main">
-    <section class="assessment-intro">
-      <h1>{{ assessment.title }}</h1>
-      {% if assessment.description %}
-        <p class="desc">{{ assessment.description }}</p>
-      {% endif %}
-      <div class="badges-row">
-        <span class="badge">{{ assessment.subject.name }}</span>
-        <span class="badge badge-secondary">Loại: {{ assessment.type }}</span>
-        <span class="badge badge-secondary">{{ aqs|length }} câu hỏi</span>
-        <span class="badge badge-secondary">Thời gian: {{ assessment.duration_minutes }} phút</span>
-        <span class="badge badge-secondary">Điểm đạt: {{ assessment.pass_score }}%</span>
-      </div>
-    </section>
-
-    {% if not aqs %}
-      <div class="question-card" style="text-align: center; padding: 40px;">
-        <p>Đề thi này hiện tại chưa có câu hỏi nào. Vui lòng quay lại sau.</p>
-        <p style="margin-top: 14px;"><a href="{{ url_for('library.learner_page') }}" class="back-link">Quay lại kho học tập</a></p>
-      </div>
-    {% else %}
-      <form id="quiz-form" method="POST" action="{{ url_for('library.quiz_page', id=assessment.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-        {% set letters = ["A", "B", "C", "D"] %}
-        {% for aq in aqs %}
-          {% set q = aq.question %}
-          <article class="question-card" id="card-q{{ q.id }}">
-            <div class="question-card-header">
-              <span class="q-number">Câu {{ loop.index }}</span>
-              <div class="q-meta">
-                {% if q.topic %}<span class="q-topic">{{ q.topic }}</span>{% endif %}
-                <span>Độ khó: {{ q.difficulty }}/10</span>
-                <span>({{ aq.points }} điểm)</span>
-              </div>
-            </div>
-            <div class="question-text">{{ q.content | math_format }}</div>
-            <div class="options-grid">
-              {% for opt in q.options %}
-                {% set letter = letters[loop.index0] if loop.index0 < 4 else (loop.index|string) %}
-                <label class="option-label" data-question-id="{{ q.id }}">
-                  <input type="radio" name="question_{{ q.id }}" value="{{ opt.id }}">
-                  <span class="opt-letter">{{ letter }}</span>
-                  <span class="opt-content">{{ opt.content | math_format }}</span>
-                </label>
-              {% endfor %}
-            </div>
-          </article>
-        {% endfor %}
-
-        <div class="bottom-bar">
-          <div class="bottom-content">
-            <div class="progress-text">
-              Đã làm: <span id="answered-count" class="progress-highlight">0</span> / {{ aqs|length }} câu
-            </div>
-            <button type="submit" id="submit-btn" class="btn-submit">Nộp bài thi</button>
-          </div>
+  <main class="quiz-workspace">
+    <div class="quiz-main-col">
+      <section class="assessment-intro">
+        <h1>{{ assessment.title }}</h1>
+        {% if assessment.description %}
+          <p class="desc">{{ assessment.description }}</p>
+        {% endif %}
+        <div class="badges-row">
+          <span class="badge">{{ assessment.subject.name }}</span>
+          <span class="badge badge-secondary">Loại: {{ assessment.type }}</span>
+          <span class="badge badge-secondary">{{ aqs|length }} câu hỏi</span>
+          <span class="badge badge-secondary">Thời gian: {{ assessment.duration_minutes }} phút</span>
+          <span class="badge badge-secondary">Điểm đạt: {{ assessment.pass_score }}%</span>
         </div>
-      </form>
+      </section>
+
+      {% if not aqs %}
+        <div class="question-card" style="text-align: center; padding: 40px;">
+          <p>Đề thi này hiện tại chưa có câu hỏi nào. Vui lòng quay lại sau.</p>
+          <p style="margin-top: 14px;"><a href="{{ url_for('library.learner_page') }}" class="back-link">Quay lại kho học tập</a></p>
+        </div>
+      {% else %}
+        <form id="quiz-form" method="POST" action="{{ url_for('library.quiz_page', id=assessment.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% if attempt %}<input type="hidden" name="attempt_id" value="{{ attempt.id }}">{% endif %}
+
+          {% set letters = ["A", "B", "C", "D"] %}
+          {% for aq in aqs %}
+            {% set q = aq.question %}
+            {% set saved_opt_id = saved_answers.get(q.id) %}
+            <article class="question-card {% if not loop.first %}hidden{% endif %}" id="card-q{{ q.id }}" data-index="{{ loop.index0 }}" data-question-id="{{ q.id }}">
+              <div class="question-card-header">
+                <span class="q-number">Câu {{ loop.index }} / {{ aqs|length }}</span>
+                <div class="q-meta">
+                  {% if q.topic %}<span class="q-topic">{{ q.topic }}</span>{% endif %}
+                  <span>Độ khó: {{ q.difficulty }}/10</span>
+                  <span>({{ aq.points }} điểm)</span>
+                  <button type="button" class="flag-btn" data-flag-index="{{ loop.index0 }}">🚩 Đánh dấu</button>
+                </div>
+              </div>
+
+              <div class="question-text">{{ q.content | math_format }}</div>
+
+              <div class="options-grid">
+                {% for opt in q.options %}
+                  {% set letter = letters[loop.index0] if loop.index0 < 4 else (loop.index|string) %}
+                  {% set is_checked = (saved_opt_id == opt.id) %}
+                  <label class="option-label {% if is_checked %}selected{% endif %}" data-question-id="{{ q.id }}" data-option-id="{{ opt.id }}">
+                    <input type="radio" name="question_{{ q.id }}" value="{{ opt.id }}" {% if is_checked %}checked{% endif %}>
+                    <span class="opt-letter">{{ letter }}</span>
+                    <span class="opt-content">{{ opt.content | math_format }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+
+              <div class="card-nav-footer">
+                <button type="button" class="btn btn-ghost btn-clear-choice" data-question-id="{{ q.id }}">✕ Bỏ chọn đáp án</button>
+                <div class="card-nav-buttons">
+                  <button type="button" class="btn btn-outline btn-prev-q" {% if loop.first %}disabled{% endif %}>← Câu trước</button>
+                  <button type="button" class="btn btn-primary btn-next-q" {% if loop.last %}disabled{% endif %}>Câu tiếp →</button>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </form>
+      {% endif %}
+    </div>
+
+    {% if aqs %}
+    <aside class="quiz-sidebar" aria-label="Bảng điều hướng câu hỏi">
+      <div class="sidebar-title">
+        <span>Danh sách câu hỏi</span>
+        <span id="answered-progress-text" style="font-size:13.5px; color:var(--primary)">0 / {{ aqs|length }}</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="answered-progress-bar" class="progress-bar-fill" style="width:0%"></div>
+      </div>
+      <div class="nav-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--success-bg); border:1px solid #86efac;"></span>Đã làm</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#fff; border:1px solid var(--border);"></span>Chưa làm</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#fff; border:2px solid var(--primary);"></span>Đang xem</span>
+      </div>
+      <div id="question-nav-grid" class="nav-grid">
+        {% for aq in aqs %}
+          <button type="button" class="nav-pill {% if loop.first %}current{% endif %}" data-nav-index="{{ loop.index0 }}">{{ loop.index }}</button>
+        {% endfor %}
+      </div>
+      <button type="button" id="open-submit-modal-btn" class="btn btn-primary btn-submit-full">Kiểm tra & Nộp bài</button>
+      <div class="shortcut-hint">Phím tắt: ← / → chuyển câu · Phím 1-4 chọn A-D</div>
+    </aside>
     {% endif %}
   </main>
 
+  <!-- Pre-Submit Verification Modal -->
+  <div id="submit-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2>Kiểm tra trước khi nộp bài</h2>
+      <p style="font-size:14px; color:var(--text-muted)">Vui lòng rà soát số câu đã làm và các câu còn bỏ trống trước khi chấm điểm.</p>
+      <div class="modal-stats">
+        <div class="modal-stat">
+          <strong id="modal-answered-count">0</strong>
+          <span>Đã trả lời</span>
+        </div>
+        <div class="modal-stat">
+          <strong id="modal-unanswered-count" style="color:var(--danger)">0</strong>
+          <span>Chưa trả lời</span>
+        </div>
+        <div class="modal-stat">
+          <strong id="modal-flagged-count" style="color:var(--flag)">0</strong>
+          <span>Đánh dấu xem lại</span>
+        </div>
+      </div>
+      <div id="modal-unanswered-wrap" style="margin-top:12px; display:none;">
+        <div style="font-size:13px; font-weight:700; color:var(--danger)">Câu chưa làm (bấm để chuyển nhanh):</div>
+        <div id="modal-unanswered-chips" class="jump-chips"></div>
+      </div>
+      <div id="modal-flagged-wrap" style="margin-top:12px; display:none;">
+        <div style="font-size:13px; font-weight:700; color:#b45309">Câu đã đánh dấu xem lại:</div>
+        <div id="modal-flagged-chips" class="jump-chips"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="cancel-submit-btn" class="btn btn-outline">Tiếp tục làm bài</button>
+        <button type="button" id="confirm-submit-btn" class="btn btn-primary">Xác nhận nộp bài</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auto-submit Timeout Overlay -->
+  <div id="timeout-overlay" class="modal-backdrop" role="alertdialog" aria-modal="true">
+    <div class="modal-card" style="text-align:center;">
+      <h2>⏱️ Đã hết thời gian làm bài!</h2>
+      <p style="margin:12px 0; color:var(--text-muted)">Hệ thống đang tự động thu bài, lưu đáp án cuối cùng và chấm điểm cho bạn...</p>
+    </div>
+  </div>
+
   <script>
-    (() => {
-      const form = document.querySelector("#quiz-form");
-      const totalQuestions = {{ aqs|length }};
-      const durationMinutes = {{ assessment.duration_minutes }};
-      const timerDisplay = document.querySelector("#time-left");
-      const timerBadge = document.querySelector("#quiz-timer");
-      const answeredCountEl = document.querySelector("#answered-count");
-
-      // Update answered count & option styling
-      function updateProgress() {
-        if (!form) return;
-        const checkedInputs = form.querySelectorAll('input[type="radio"]:checked');
-        if (answeredCountEl) answeredCountEl.textContent = checkedInputs.length;
-      }
-
-      document.querySelectorAll(".option-label").forEach((label) => {
-        const input = label.querySelector('input[type="radio"]');
-        if (!input) return;
-
-        input.addEventListener("change", () => {
-          const qId = label.dataset.questionId;
-          document.querySelectorAll(`.option-label[data-question-id="${qId}"]`).forEach((item) => {
-            item.classList.toggle("selected", item.querySelector('input[type="radio"]').checked);
-          });
-          updateProgress();
-        });
-      });
-
-      // Countdown Timer
-      let totalSeconds = durationMinutes * 60;
-      function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-      }
-
-      if (timerDisplay) {
-        timerDisplay.textContent = formatTime(totalSeconds);
-        const timerInterval = setInterval(() => {
-          totalSeconds -= 1;
-          if (totalSeconds <= 0) {
-            clearInterval(timerInterval);
-            timerDisplay.textContent = "00:00";
-            alert("Đã hết thời gian làm bài! Hệ thống sẽ tự động nộp bài của bạn.");
-            form.submit();
-            return;
-          }
-          timerDisplay.textContent = formatTime(totalSeconds);
-          if (totalSeconds <= 300) { // Under 5 minutes
-            timerBadge?.classList.add("warning");
-          }
-        }, 1000);
-      }
-
-      // Submit confirmation
-      if (form) {
-        form.addEventListener("submit", (e) => {
-          const answered = form.querySelectorAll('input[type="radio"]:checked').length;
-          const remaining = totalQuestions - answered;
-          if (remaining > 0) {
-            const confirmed = confirm(`Bạn còn ${remaining} câu chưa trả lời. Bạn có chắc chắn muốn nộp bài không?`);
-            if (!confirmed) {
-              e.preventDefault();
-            }
-          }
-        });
-      }
-    })();
+    window.quizConfig = {
+      attemptId: {{ attempt.id if attempt else 'null' }},
+      assessmentId: {{ assessment.id }},
+      totalQuestions: {{ aqs|length }},
+      remainingSeconds: {{ remaining_seconds }},
+      saveUrl: {{ url_for('library.save_attempt_answers', attempt_id=attempt.id)|tojson if attempt else 'null' }},
+      submitUrl: {{ url_for('library.submit_attempt', attempt_id=attempt.id)|tojson if attempt else 'null' }},
+      savedAnswers: {{ saved_answers|tojson }}
+    };
   </script>
+  <script src="{{ url_for('static', filename='js/quiz.js') }}" defer></script>
 </body>
 </html>

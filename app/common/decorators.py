@@ -18,11 +18,12 @@ def get_current_user():
     if user_id is None:
         return None
 
-    if getattr(g, "current_user_loaded", False):
+    if getattr(g, "current_user_loaded_id", None) == str(user_id) and getattr(g, "current_user_loaded", False):
         return g.current_user
 
     g.current_user = db.session.get(User, user_id)
     g.current_user_loaded = True
+    g.current_user_loaded_id = str(user_id)
     return g.current_user
 
 

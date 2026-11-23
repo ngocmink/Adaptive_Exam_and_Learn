@@ -94,6 +94,56 @@
   function createCard(record, recordKind) {
     const card = document.createElement("article");
     card.className = "learner-card";
+
+    if (recordKind === "history") {
+      appendText(card, "h2", record.assessment_title || "Bài kiểm tra", "learner-card-title");
+      const meta = document.createElement("p");
+      meta.className = "learner-card-meta";
+      const parts = [];
+      if (record.subject_name) parts.push(record.subject_name);
+      if (record.status === "completed") {
+        parts.push(`Điểm: ${record.score}% (${record.is_passed ? "Đạt" : "Chưa đạt"})`);
+        parts.push(`Đúng ${record.correct_answers}/${record.total_questions} câu`);
+      } else if (record.status === "in_progress") {
+        parts.push("Đang làm dở");
+      } else {
+        parts.push("Đã bỏ qua");
+      }
+      if (record.start_time) {
+        parts.push(new Date(record.start_time).toLocaleString("vi-VN"));
+      }
+      meta.textContent = parts.filter(Boolean).join(" · ");
+      card.append(meta);
+
+      const actionWrap = document.createElement("div");
+      actionWrap.style.display = "flex";
+      actionWrap.style.gap = "8px";
+      actionWrap.style.flexWrap = "wrap";
+      actionWrap.style.marginTop = "auto";
+
+      if (record.status === "in_progress") {
+        const contLink = document.createElement("a");
+        contLink.href = record.quiz_url;
+        contLink.className = "learner-card-link learner-card-btn-quiz";
+        contLink.textContent = "Tiếp tục làm bài";
+        actionWrap.append(contLink);
+      } else {
+        const resLink = document.createElement("a");
+        resLink.href = record.results_url;
+        resLink.className = "learner-card-link";
+        resLink.textContent = "Xem chi tiết";
+        actionWrap.append(resLink);
+
+        const retakeLink = document.createElement("a");
+        retakeLink.href = record.quiz_url + "&retake=1";
+        retakeLink.className = "learner-card-link learner-card-btn-quiz";
+        retakeLink.textContent = "Làm lại";
+        actionWrap.append(retakeLink);
+      }
+      card.append(actionWrap);
+      return card;
+    }
+
     appendText(card, "h2", record.title || "Nội dung chưa có tiêu đề", "learner-card-title");
 
     const metadata = document.createElement("p");
@@ -124,7 +174,7 @@
       appendText(card, "p", record.description, "learner-card-description");
     }
 
-    if (kind === "materials") {
+    if (recordKind === "materials") {
       const link = document.createElement("a");
       const readerUrl = new URL(config.readingUrl, window.location.origin);
       readerUrl.searchParams.set("id", String(record.id));
@@ -250,16 +300,25 @@
     cards.replaceChildren();
     if (paginationNav) paginationNav.replaceChildren();
 
-    const endpoint = requestedKind === "materials" ? config.materialsUrl : config.assessmentsUrl;
+    const endpoint =
+      requestedKind === "materials"
+        ? config.materialsUrl
+        : requestedKind === "assessments"
+        ? config.assessmentsUrl
+        : config.attemptsUrl;
     const filters = {};
-    if (requestedLesson) filters.lesson_id = requestedLesson;
-    if (requestedSearch) filters.search = requestedSearch;
+    if (requestedKind !== "history") {
+      if (requestedLesson) filters.lesson_id = requestedLesson;
+      if (requestedSearch) filters.search = requestedSearch;
+    }
 
     try {
       const { records, pagination } = await fetchPage(endpoint, filters, currentPage, PAGE_SIZE);
       if (requestId !== recordsRequestId) return;
       if (!records.length) {
-        if (requestedSearch) {
+        if (requestedKind === "history") {
+          message.textContent = "Bạn chưa có lịch sử làm bài nào.";
+        } else if (requestedSearch) {
           message.textContent = `Không tìm thấy nội dung phù hợp với "${requestedSearch}".`;
         } else {
           message.textContent = requestedKind === "materials"
@@ -305,7 +364,8 @@
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
-      kind = tab.dataset.kind === "assessments" ? "assessments" : "materials";
+      const rawKind = tab.dataset.kind;
+      kind = rawKind === "assessments" ? "assessments" : rawKind === "history" ? "history" : "materials";
       tabs.forEach((item) => {
         const active = item === tab;
         item.classList.toggle("active", active);

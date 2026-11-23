@@ -574,6 +574,7 @@ summary {
 }
 
 .account-logout,
+.account-admin-link,
 .learner-tab {
   min-height: 42px;
   padding: 8px 16px;
@@ -583,9 +584,18 @@ summary {
   color: #38366c;
   font: 600 15px "Work Sans", sans-serif;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.account-admin-link {
+  border-color: #4d4ca2;
+  color: #4d4ca2;
 }
 
 .account-logout:hover,
+.account-admin-link:hover,
 .learner-tab:hover,
 .learner-tab.active {
   border-color: #4d4ca2;

@@ -29,6 +29,7 @@
             <li><a href="#method">Phương pháp</a></li>
             <li><a href="#roadmap">Lộ trình</a></li>
             <li><a href="#courses">Tài liệu</a></li>
+            <li><a href="{{ url_for('library.history_page') }}">Lịch sử làm bài</a></li>
           </ul>
         </nav>
         <div class="logo-container" aria-label="Đơn vị đồng hành">
@@ -37,6 +38,9 @@
         </div>
         <div class="account-user">
           <span class="welcome-message">Xin chào, {{ user.full_name }}</span>
+          {% if user.role in ['admin', 'teacher'] %}
+            <a href="{{ url_for('admin.admin_page') }}" class="account-admin-link">Trang Quản trị</a>
+          {% endif %}
           <button id="logout-button" class="account-logout" type="button">Đăng xuất</button>
         </div>
       </div>
@@ -69,6 +73,7 @@
           <div class="learner-tabs" role="tablist" aria-label="Loại nội dung">
             <button class="learner-tab active" id="materials-tab" type="button" role="tab" aria-selected="true" data-kind="materials">Tài liệu</button>
             <button class="learner-tab" id="assessments-tab" type="button" role="tab" aria-selected="false" data-kind="assessments">Đề ôn tập</button>
+            <button class="learner-tab" id="history-tab" type="button" role="tab" aria-selected="false" data-kind="history">Lịch sử làm bài</button>
           </div>
         </div>
         <p id="subject-message" class="learner-subject-message" role="status" aria-live="polite"></p>
@@ -138,6 +143,8 @@
       assessmentsUrl: {{ url_for('library.list_assessments')|tojson }},
       readingUrl: {{ url_for('library.reading_page')|tojson }},
       quizUrl: {{ url_for('library.quiz_page')|tojson }},
+      attemptsUrl: {{ url_for('library.list_my_attempts')|tojson }},
+      historyUrl: {{ url_for('library.history_page')|tojson }},
       logoutUrl: {{ url_for('auth.logout')|tojson }},
       loginUrl: {{ url_for('auth.login_page')|tojson }}
     };

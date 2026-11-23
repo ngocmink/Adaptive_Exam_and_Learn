@@ -4,6 +4,9 @@ from importlib import import_module
 MODEL_MODULES = {
     "User": "app.models.user",
     "Subject": "app.models.subject",
+    "Lesson": "app.models.lesson",
+    "LessonMaterial": "app.models.lesson",
+    "QuestionLesson": "app.models.lesson",
     "Material": "app.models.material",
     "Question": "app.models.question",
     "QuestionOption": "app.models.question",
