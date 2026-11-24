@@ -128,6 +128,27 @@ def _finalize_expired_user_attempts(user_id):
             _grade_and_finalize_attempt(att, assess, now=deadline)
 
 
+def finalize_all_expired_attempts():
+    Attempt = get_model("Attempt")
+    Assessment = get_model("Assessment")
+    in_progress = db.session.scalars(
+        select(Attempt).where(Attempt.status == "in_progress")
+    ).all()
+    if not in_progress:
+        return 0
+    now = utcnow()
+    finalized = 0
+    for att in in_progress:
+        assess = db.session.get(Assessment, att.assessment_id)
+        if assess is None:
+            continue
+        deadline = _attempt_deadline(att, assess)
+        if now >= deadline:
+            _grade_and_finalize_attempt(att, assess, now=deadline)
+            finalized += 1
+    return finalized
+
+
 @library_bp.get("/account")
 @login_required
 def learner_page():
@@ -152,7 +173,7 @@ def reading_page():
         return error_response(str(exc), status=503)
 
     material = db.session.get(Material, material_id)
-    if material is None or not material.is_active:
+    if material is None or not material.is_active or not material.subject or not material.subject.is_active:
         return error_response("Không tìm thấy tài liệu.", status=404)
     return render_template("material_reader.html", material=material, user=g.current_user)
 
@@ -192,7 +213,7 @@ def quiz_page():
         return error_response(str(exc), status=503)
 
     assessment = db.session.get(Assessment, assessment_id)
-    if assessment is None or not assessment.is_active:
+    if assessment is None or not assessment.is_active or not assessment.subject or not assessment.subject.is_active:
         return error_response("Không tìm thấy đề thi.", status=404)
 
     aqs = _assessment_active_questions(assessment)
@@ -212,11 +233,22 @@ def quiz_page():
             except (ValueError, TypeError):
                 attempt = None
 
+        if attempt is None:
+            attempt = db.session.scalar(
+                select(Attempt)
+                .where(
+                    Attempt.user_id == g.current_user.id,
+                    Attempt.assessment_id == assessment.id,
+                    Attempt.status == "in_progress",
+                )
+                .order_by(Attempt.id.desc())
+            )
+
         if attempt is not None and attempt.status == "completed":
             return redirect(url_for("library.quiz_results", attempt_id=attempt.id))
 
+        now = utcnow()
         if attempt is None or attempt.status != "in_progress":
-            now = utcnow()
             attempt = Attempt(
                 user_id=g.current_user.id,
                 assessment_id=assessment.id,
@@ -228,6 +260,11 @@ def quiz_page():
             )
             db.session.add(attempt)
             db.session.flush()
+
+        deadline = _attempt_deadline(attempt, assessment)
+        if now > deadline:
+            _grade_and_finalize_attempt(attempt, assessment, answers_payload=None, now=deadline)
+            return redirect(url_for("library.quiz_results", attempt_id=attempt.id, auto_submitted=1))
 
         answers_payload = {}
         for aq in aqs:
@@ -340,7 +377,7 @@ def save_attempt_answers(attempt_id):
 
     now = utcnow()
     deadline = _attempt_deadline(attempt, assessment)
-    if now > deadline + timedelta(seconds=5):
+    if now >= deadline:
         _grade_and_finalize_attempt(attempt, assessment, now=deadline)
         return success_response(
             {
@@ -463,8 +500,12 @@ def submit_attempt(attempt_id):
     if attempt.status != "in_progress":
         return error_response("Không thể nộp phiên làm bài này.", status=400)
 
+    now = utcnow()
+    deadline = _attempt_deadline(attempt, assessment)
+    is_expired = now > deadline
+
     answers_payload = {}
-    if isinstance(body, dict) and isinstance(body.get("answers"), dict):
+    if not is_expired and isinstance(body, dict) and isinstance(body.get("answers"), dict):
         for k, v in body["answers"].items():
             try:
                 qid = int(k)
@@ -473,9 +514,14 @@ def submit_attempt(attempt_id):
             except (ValueError, TypeError):
                 pass
 
-    _grade_and_finalize_attempt(attempt, assessment, answers_payload=answers_payload)
+    _grade_and_finalize_attempt(
+        attempt,
+        assessment,
+        answers_payload=answers_payload if not is_expired else None,
+        now=deadline if is_expired else now,
+    )
     redirect_params = {"attempt_id": attempt.id}
-    if auto_submitted:
+    if auto_submitted or is_expired:
         redirect_params["auto_submitted"] = 1
 
     return success_response(
@@ -788,7 +834,7 @@ def _material_data(material):
     }
 
 
-def _assessment_data(assessment, question_count):
+def _assessment_data(assessment, question_count, author_name=None):
     subject = getattr(assessment, "subject", None)
     return {
         "id": assessment.id,
@@ -800,6 +846,7 @@ def _assessment_data(assessment, question_count):
         "duration_minutes": assessment.duration_minutes,
         "pass_score": assessment.pass_score,
         "question_count": question_count,
+        "author_name": author_name or "Giảng viên VISE",
     }
 
 
@@ -807,8 +854,13 @@ def _assessment_data(assessment, question_count):
 def list_materials():
     try:
         Material = get_model("Material")
+        Subject = get_model("Subject")
         page, limit = get_page_args()
-        stmt = select(Material).where(Material.is_active.is_(True))
+        stmt = (
+            select(Material)
+            .join(Subject, Subject.id == Material.subject_id)
+            .where(Material.is_active.is_(True), Subject.is_active.is_(True))
+        )
 
         search = request.args.get("search", "").strip()
         if search:
@@ -824,8 +876,11 @@ def list_materials():
         if lesson_id:
             from app.models.hierarchy import LessonMaterial
 
-            stmt = stmt.join(LessonMaterial, LessonMaterial.material_id == Material.id).where(
-                LessonMaterial.lesson_id == _as_int(lesson_id, "lesson_id")
+            lid = _as_int(lesson_id, "lesson_id")
+            stmt = stmt.where(
+                Material.id.in_(
+                    select(LessonMaterial.material_id).where(LessonMaterial.lesson_id == lid)
+                )
             )
 
         difficulty = request.args.get("difficulty", "").strip().lower()
@@ -860,7 +915,7 @@ def material_detail(material_id):
         return error_response(str(exc), status=503)
 
     material = db.session.get(Material, material_id)
-    if material is None or not material.is_active:
+    if material is None or not material.is_active or not material.subject or not material.subject.is_active:
         return error_response("Không tìm thấy tài liệu.", status=404)
     return success_response(_material_data(material))
 
@@ -870,8 +925,14 @@ def list_assessments():
     try:
         Assessment = get_model("Assessment")
         AssessmentQuestion = get_model("AssessmentQuestion")
+        Subject = get_model("Subject")
+        User = get_model("User")
         page, limit = get_page_args()
-        stmt = select(Assessment).where(Assessment.is_active.is_(True))
+        stmt = (
+            select(Assessment)
+            .join(Subject, Subject.id == Assessment.subject_id)
+            .where(Assessment.is_active.is_(True), Subject.is_active.is_(True))
+        )
 
         search = request.args.get("search", "").strip()
         if search:
@@ -911,6 +972,15 @@ def list_assessments():
 
         stmt = stmt.order_by(Assessment.id.asc())
         result = db.paginate(stmt, page=page, per_page=limit, error_out=False)
+        creator_ids = {a.created_by for a in result.items if a.created_by is not None}
+        author_map = (
+            {
+                u.id: u.full_name
+                for u in db.session.scalars(select(User).where(User.id.in_(creator_ids))).all()
+            }
+            if creator_ids
+            else {}
+        )
         data = []
         for assessment in result.items:
             count = db.session.scalar(
@@ -918,7 +988,13 @@ def list_assessments():
                     AssessmentQuestion.assessment_id == assessment.id
                 )
             )
-            data.append(_assessment_data(assessment, count or 0))
+            data.append(
+                _assessment_data(
+                    assessment,
+                    count or 0,
+                    author_map.get(assessment.created_by),
+                )
+            )
     except ValueError as exc:
         return error_response(str(exc), status=400)
     except RuntimeError as exc:
@@ -932,11 +1008,12 @@ def assessment_detail(assessment_id):
     try:
         Assessment = get_model("Assessment")
         AssessmentQuestion = get_model("AssessmentQuestion")
+        User = get_model("User")
     except RuntimeError as exc:
         return error_response(str(exc), status=503)
 
     assessment = db.session.get(Assessment, assessment_id)
-    if assessment is None or not assessment.is_active:
+    if assessment is None or not assessment.is_active or not assessment.subject or not assessment.subject.is_active:
         return error_response("Không tìm thấy đề thi.", status=404)
 
     question_count = db.session.scalar(
@@ -944,5 +1021,8 @@ def assessment_detail(assessment_id):
             AssessmentQuestion.assessment_id == assessment.id
         )
     )
+    author = db.session.get(User, assessment.created_by) if assessment.created_by else None
     # Public detail deliberately excludes question text and correct answers.
-    return success_response(_assessment_data(assessment, question_count or 0))
+    return success_response(
+        _assessment_data(assessment, question_count or 0, author.full_name if author else None)
+    )

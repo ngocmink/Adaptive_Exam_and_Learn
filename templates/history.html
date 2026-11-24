@@ -276,7 +276,21 @@
           const res = await getJson(`/api/attempts?${params}`);
           const rows = res.data || [];
           if (!rows.length) {
-            msgEl.textContent = "Bạn chưa có lượt làm bài nào phù hợp bộ lọc.";
+            msgEl.textContent = "";
+            const emptyBox = document.createElement("div");
+            emptyBox.style.cssText = "text-align:center;padding:34px 16px;border:1px dashed var(--border);border-radius:12px;background:#fafafc;";
+            const h = document.createElement("h3");
+            h.textContent = "Chưa có lịch sử làm bài";
+            h.style.cssText = "color:var(--accent);margin-bottom:8px;";
+            const p = document.createElement("p");
+            p.textContent = "Bạn chưa hoàn thành bài thi nào khớp bộ lọc. Hãy vào kho học tập để bắt đầu làm bài.";
+            p.style.cssText = "color:var(--text-muted);margin-bottom:16px;font-size:14.5px;";
+            const cta = document.createElement("a");
+            cta.href = "/account#courses";
+            cta.className = "btn btn-primary";
+            cta.textContent = "Đi tới Kho học tập";
+            emptyBox.append(h, p, cta);
+            listEl.append(emptyBox);
             return;
           }
           msgEl.textContent = "";

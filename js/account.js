@@ -166,6 +166,9 @@
       if (record.pass_score !== null && record.pass_score !== undefined) {
         facts.push("Điểm đạt " + record.pass_score);
       }
+      if (record.author_name) {
+        facts.push("Tác giả: " + record.author_name);
+      }
     }
     metadata.textContent = facts.filter(Boolean).join(" · ");
     card.append(metadata);
@@ -260,33 +263,44 @@
 
   async function loadLessons() {
     try {
-      const endpoint = config.lessonsUrl || config.subjectsUrl;
-      const items = await getAllPages(endpoint);
+      const [subjects, lessons] = await Promise.all([
+        config.subjectsUrl ? getAllPages(config.subjectsUrl) : Promise.resolve([]),
+        config.lessonsUrl ? getAllPages(config.lessonsUrl) : Promise.resolve([]),
+      ]);
       const optgroups = {};
-      items.forEach((item) => {
+
+      subjects.forEach((subj) => {
+        const groupName = `${subj.code} - ${subj.name}`;
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = groupName;
+        const allSubjOpt = document.createElement("option");
+        allSubjOpt.value = `subject:${subj.id}`;
+        allSubjOpt.textContent = `Tất cả môn ${subj.name}`;
+        optgroup.append(allSubjOpt);
+        subjectFilter.append(optgroup);
+        optgroups[subj.id] = optgroup;
+      });
+
+      lessons.forEach((item) => {
         if (item.code && item.title) {
-          const groupName = item.subject_name || "Môn học";
-          if (!optgroups[groupName]) {
-            const optgroup = document.createElement("optgroup");
+          let optgroup = optgroups[item.subject_id];
+          if (!optgroup) {
+            const groupName = item.subject_name || "Môn học";
+            optgroup = document.createElement("optgroup");
             optgroup.label = groupName;
             subjectFilter.append(optgroup);
-            optgroups[groupName] = optgroup;
+            optgroups[item.subject_id || groupName] = optgroup;
           }
           const option = document.createElement("option");
           option.value = String(item.id);
           option.textContent = `${item.code} - ${item.title}`;
-          optgroups[groupName].append(option);
-        } else {
-          const option = document.createElement("option");
-          option.value = String(item.id);
-          option.textContent = item.name || item.title;
-          subjectFilter.append(option);
+          optgroup.append(option);
         }
       });
       if (subjectMessage) subjectMessage.textContent = "";
     } catch (error) {
       subjectFilter.disabled = true;
-      if (subjectMessage) subjectMessage.textContent = "Không tải được danh sách chủ đề bài học. " + error.message;
+      if (subjectMessage) subjectMessage.textContent = "Không tải được danh sách môn và bài học. " + error.message;
     }
   }
 
@@ -294,7 +308,7 @@
     currentPage = targetPage;
     const requestId = ++recordsRequestId;
     const requestedKind = kind;
-    const requestedLesson = subjectFilter.value;
+    const requestedFilter = subjectFilter.value;
     const requestedSearch = searchQuery;
     message.textContent = "Đang tải nội dung học tập…";
     cards.replaceChildren();
@@ -307,9 +321,15 @@
         ? config.assessmentsUrl
         : config.attemptsUrl;
     const filters = {};
-    if (requestedKind !== "history") {
-      if (requestedLesson) filters.lesson_id = requestedLesson;
-      if (requestedSearch) filters.search = requestedSearch;
+    if (requestedFilter) {
+      if (requestedFilter.startsWith("subject:")) {
+        filters.subject_id = requestedFilter.slice("subject:".length);
+      } else if (requestedKind !== "history") {
+        filters.lesson_id = requestedFilter;
+      }
+    }
+    if (requestedKind !== "history" && requestedSearch) {
+      filters.search = requestedSearch;
     }
 
     try {
@@ -317,7 +337,26 @@
       if (requestId !== recordsRequestId) return;
       if (!records.length) {
         if (requestedKind === "history") {
-          message.textContent = "Bạn chưa có lịch sử làm bài nào.";
+          message.textContent = "";
+          const emptyCard = document.createElement("article");
+          emptyCard.className = "learner-card";
+          emptyCard.style.gridColumn = "1 / -1";
+          appendText(emptyCard, "h2", "Chưa có lịch sử làm bài", "learner-card-title");
+          appendText(
+            emptyCard,
+            "p",
+            "Hãy chọn một đề ôn tập hoặc bài kiểm tra để bắt đầu đánh giá năng lực của bạn.",
+            "learner-card-description"
+          );
+          const cta = document.createElement("button");
+          cta.type = "button";
+          cta.className = "learner-card-link learner-card-btn-quiz";
+          cta.textContent = "Làm đề ôn tập ngay";
+          cta.addEventListener("click", () => {
+            document.querySelector("#assessments-tab")?.click();
+          });
+          emptyCard.append(cta);
+          cards.append(emptyCard);
         } else if (requestedSearch) {
           message.textContent = `Không tìm thấy nội dung phù hợp với "${requestedSearch}".`;
         } else {

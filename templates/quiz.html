@@ -109,7 +109,22 @@
     }
     .autosave-pill.saving { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
     .autosave-pill.saved { background: var(--success-bg); color: var(--success); border-color: #bbf7d0; }
-    .autosave-pill.error { background: #fef2f2; color: var(--danger); border-color: #fecaca; }
+    .autosave-pill.offline { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+    .autosave-pill.error { background: #fef2f2; color: var(--danger); border-color: #fecaca; cursor: pointer; }
+
+    .offline-banner {
+      display: none;
+      max-width: 1220px;
+      margin: 14px auto 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      color: #9a3412;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .offline-banner.show { display: block; }
 
     .view-mode-switch {
       display: inline-flex;
@@ -560,6 +575,10 @@
       </div>
     </div>
   </header>
+
+  <div id="offline-banner" class="offline-banner" role="alert">
+    📡 Mất kết nối mạng — Đáp án của bạn đang được lưu tạm trên máy và sẽ tự động đồng bộ ngay khi có mạng trở lại.
+  </div>
 
   <main class="quiz-workspace">
     <div class="quiz-main-col">

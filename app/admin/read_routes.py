@@ -90,6 +90,9 @@ def question_json(q, lesson_ids=None):
 @admin_read_bp.get("/overview")
 @staff_required
 def overview():
+    from app.library.routes import finalize_all_expired_attempts
+
+    finalize_all_expired_attempts()
     subjects_total = db.session.scalar(select(func.count(Subject.id))) or 0
     subjects_active = (
         db.session.scalar(select(func.count(Subject.id)).where(Subject.is_active.is_(True)))
@@ -629,6 +632,9 @@ def assessment_detail(assessment_id):
 @admin_read_bp.get("/attempts")
 @staff_required
 def attempts():
+    from app.library.routes import finalize_all_expired_attempts
+
+    finalize_all_expired_attempts()
     page = positive_int("page", 1)
     limit = positive_int("limit", 15, 100)
     statement = (

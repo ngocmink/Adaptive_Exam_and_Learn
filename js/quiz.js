@@ -133,9 +133,69 @@
     } catch {}
   }
 
-  // Auto-save to server
+  // Auto-save to server with offline queue & retry
+  const offlineBanner = document.querySelector("#offline-banner");
+  const dirtyAnswers = {};
+
+  function setOfflineUi(isOffline) {
+    if (offlineBanner) offlineBanner.classList.toggle("show", isOffline);
+    if (isOffline) setAutosaveState("offline", "📡 Mất mạng · Đã lưu tạm");
+  }
+
+  async function flushDirtyAnswers() {
+    const entries = Object.entries(dirtyAnswers);
+    if (!entries.length || !config.saveUrl || isSubmitting || !navigator.onLine) return;
+    setAutosaveState("saving", "↻ Đang đồng bộ...");
+    try {
+      const response = await fetch(config.saveUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify({
+          answers: entries.map(([qid, optId]) => ({
+            question_id: Number(qid),
+            selected_option_id: optId !== null ? Number(optId) : null,
+          })),
+        }),
+      });
+      const body = await response.json();
+      if (body?.data?.expired && body?.data?.redirect_url) {
+        isSubmitting = true;
+        clearInterval(timerInterval);
+        window.location.assign(body.data.redirect_url);
+        return;
+      }
+      if (!response.ok || !body?.success) throw new Error(body?.message || "Lỗi đồng bộ.");
+      entries.forEach(([qid]) => delete dirtyAnswers[qid]);
+      const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      setAutosaveState("saved", `✓ Đã lưu lúc ${nowTime}`);
+    } catch {
+      setAutosaveState("error", "⚠ Lưu lỗi · Bấm thử lại");
+    }
+  }
+
+  window.addEventListener("offline", () => setOfflineUi(true));
+  window.addEventListener("online", () => {
+    setOfflineUi(false);
+    flushDirtyAnswers();
+  });
+  if (!navigator.onLine) setOfflineUi(true);
+  autosaveStatus?.addEventListener("click", () => {
+    if (autosaveStatus.classList.contains("error") || Object.keys(dirtyAnswers).length) {
+      flushDirtyAnswers();
+    }
+  });
+
   async function saveAnswerToServer(questionId, selectedOptionId) {
     if (!config.saveUrl || isSubmitting) return;
+    dirtyAnswers[questionId] = selectedOptionId;
+    if (!navigator.onLine) {
+      setOfflineUi(true);
+      return;
+    }
     setAutosaveState("saving", "↻ Đang lưu...");
     try {
       const response = await fetch(config.saveUrl, {
@@ -164,10 +224,15 @@
         }
         throw new Error(body?.message || "Lỗi lưu tạm.");
       }
+      delete dirtyAnswers[questionId];
       const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
       setAutosaveState("saved", `✓ Đã lưu lúc ${nowTime}`);
     } catch {
-      setAutosaveState("error", "⚠ Đã lưu tạm trên máy");
+      if (!navigator.onLine) {
+        setOfflineUi(true);
+      } else {
+        setAutosaveState("error", "⚠ Lưu lỗi · Bấm thử lại");
+      }
     }
   }
 

@@ -382,8 +382,20 @@
           <div class="stat-value" style="color:var(--success)">{{ attempt.correct_answers }} / {{ attempt.total_questions }}</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Sai / Chưa làm</div>
-          <div class="stat-value">{{ wrong_count }} / {{ unanswered_count }}</div>
+          <div class="stat-label">Tỷ lệ đúng / sai</div>
+          <div class="stat-value">
+            {% if attempt.total_questions > 0 %}
+              {% set acc_pct = ((attempt.correct_answers / attempt.total_questions) * 100)|round(1) %}
+              {% set err_pct = ((wrong_count / attempt.total_questions) * 100)|round(1) %}
+              {{ acc_pct }}% / {{ err_pct }}%
+            {% else %}
+              0% / 0%
+            {% endif %}
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Số câu bỏ trống</div>
+          <div class="stat-value">{{ unanswered_count }}</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">Thời gian làm bài</div>
